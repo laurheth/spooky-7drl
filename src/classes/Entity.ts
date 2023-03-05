@@ -7,6 +7,7 @@ export interface EntityParams {
     mapHandler: MapHandler;
     x: number;
     y: number;
+    z: number;
 }
 
 /**
@@ -18,21 +19,22 @@ class Entity {
     currentTile: Tile|null = null;
     x: number = 0;
     y: number = 0;
-    constructor({sprite, mapHandler, x, y}:EntityParams) {
+    z: number = 1;
+    constructor({sprite, mapHandler, x, y, z}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
         this.mapHandler.spriteContainer.addChild(this.sprite);
         this.sprite.visible = false;
         // Move self to starting location
-        if (this.moveTo(x, y, true)) {
+        if (this.moveTo(x, y, z, true)) {
             this.sprite.visible = true;
         }
     }
 
     // Move to a location
-    moveTo(x:number, y:number, immediate = false): boolean {
+    moveTo(x:number, y:number, z:number, immediate = false): boolean {
         // Make sure it's possible to go there
-        const tile = this.mapHandler.getTile(x,y);
+        const tile = this.mapHandler.getTile(x,y,z);
         if (tile && tile.passable) {
             if (tile.entity) {
                 // Something lives there. Act upon it. The recipient will figure out what to do.
@@ -42,6 +44,7 @@ class Entity {
                 // We can move! Go there now.
                 this.x = x;
                 this.y = y;
+                this.z = z;
                 if (this.currentTile) {
                     // Remove self from previous tile
                     this.currentTile.entity = null;
@@ -56,7 +59,6 @@ class Entity {
                     this.sprite.x = x * this.mapHandler.tileScale;
                     this.sprite.y = y * this.mapHandler.tileScale;
                 }
-                console.log(this.x, this.y);
                 return true;
             }
         } else {
@@ -65,8 +67,8 @@ class Entity {
     }
 
     // Helper method to make stepping easier
-    step(dx:number, dy:number): boolean {
-        return this.moveTo(this.x + dx, this.y + dy);
+    step(dx:number, dy:number, dz:number): boolean {
+        return this.moveTo(this.x + dx, this.y + dy, this.z + dz);
     }
 
     // Get acted upon

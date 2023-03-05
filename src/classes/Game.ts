@@ -45,7 +45,8 @@ class Game {
         this.mapHandler = new MapHandler({
             tileContainer: this.tileContainer,
             spriteContainer: this.spriteContainer,
-            tileScale: 32
+            tileScale: 32,
+            game: this
         });
 
         // Handle resizing.
@@ -60,6 +61,7 @@ class Game {
         this.pixiApp.view.width = this.appRoot.clientWidth;
         this.pixiApp.view.height = this.appRoot.clientHeight;
         this.pixiApp.renderer.resize(this.appRoot.clientWidth, this.appRoot.clientHeight);
+        this.mapHandler.recenter();
     }
 
     // Start a new map

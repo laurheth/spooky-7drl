@@ -1,11 +1,14 @@
-import { Container, Sprite } from "pixi.js"
+import { Container, ICanvas, IRenderer, Sprite } from "pixi.js"
 import Tile from "./Tile"
 import Player from "./Player"
+import Entity from "./Entity";
+import Game from "./Game";
 
 interface MapHandlerParams {
     tileContainer: Container;
     spriteContainer: Container;
     tileScale: number;
+    game: Game;
 }
 
 interface NewMapParams {
@@ -21,12 +24,15 @@ class MapHandler {
     spriteContainer: Container;
     tileMap: Map<string, Tile>;
     tileScale: number;
+    player: Player|null = null;
+    game: Game;
 
-    constructor({tileContainer, spriteContainer, tileScale}:MapHandlerParams) {
+    constructor({tileContainer, spriteContainer, tileScale, game}:MapHandlerParams) {
         this.tileContainer = tileContainer;
         this.spriteContainer = spriteContainer;
         this.tileScale = tileScale;
         this.tileMap = new Map<string, Tile>();
+        this.game = game;
     }
 
     // Generate a new map!
@@ -61,7 +67,7 @@ class MapHandler {
                     });
                 }
                 // Store the tile
-                this.tileMap.set(`${x},${y}`, newTile);
+                this.tileMap.set(`${x},${y},1`, newTile);
             }
         }
 
@@ -70,18 +76,43 @@ class MapHandler {
             sprite: Sprite.from("sprites/testFace.png"),
             x: 3,
             y: 3,
+            z: 1,
             mapHandler: this
         })
     }
 
     // Get the tile at the given location
-    getTile(x:number, y:number):Tile|null {
-        const key = `${x},${y}`;
+    getTile(x:number, y:number, z:number):Tile|null {
+        const key = `${x},${y},${z}`;
         if (this.tileMap.has(key)) {
             return this.tileMap.get(key);
         } else {
             return null;
         }
+    }
+
+    // Recenter the view, if possible
+    recenter(target:Entity = null) {
+        // No target, use the player
+        if (!target) {
+            if (this.player) {
+                target = this.player;
+            } else {
+                // No player? Forget it.
+                return;
+            }
+        }
+        const targetX = target.sprite.x;
+        const targetY = target.sprite.y;
+
+        const view:IRenderer = this.game.pixiApp.renderer;
+        const x = view.width / (devicePixelRatio * 2) - targetX - this.tileScale/2;
+        const y = view.height / (devicePixelRatio *2) - targetY - this.tileScale/2;
+
+        this.tileContainer.x = x;
+        this.tileContainer.y = y;
+        this.spriteContainer.x = x;
+        this.spriteContainer.y = y;
     }
 }
 
