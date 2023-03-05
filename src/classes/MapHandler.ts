@@ -1,5 +1,6 @@
 import { Container, Sprite } from "pixi.js"
 import Tile from "./Tile"
+import Player from "./Player"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -63,7 +64,24 @@ class MapHandler {
                 this.tileMap.set(`${x},${y}`, newTile);
             }
         }
-        console.log(this.tileMap);
+
+        // Add in the player
+        const player = new Player({
+            sprite: Sprite.from("sprites/testFace.png"),
+            x: 3,
+            y: 3,
+            mapHandler: this
+        })
+    }
+
+    // Get the tile at the given location
+    getTile(x:number, y:number):Tile|null {
+        const key = `${x},${y}`;
+        if (this.tileMap.has(key)) {
+            return this.tileMap.get(key);
+        } else {
+            return null;
+        }
     }
 }
 
