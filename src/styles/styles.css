@@ -1,5 +1,6 @@
 .appRoot {
     height: 100vh;
+    overflow: hidden;
 }
 
 canvas {
