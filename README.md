@@ -1,15 +1,15 @@
-# 🚀 Welcome to your new awesome project!
+# Spooky 7DRL 👻
 
-This project has been created using **webpack-cli**, you can now run
+My contribution to the [2023 Seven Day Roguelike Challenge](https://itch.io/jam/7drl-challenge-2023). Built using **TypeScript** and **Pixi.js**.
+
+This project has been created using **webpack-cli**. For local testing and development, run
+
+```
+npm run serve
+```
+
+To build and bundle a copy for distribution, run
 
 ```
 npm run build
 ```
-
-or
-
-```
-yarn build
-```
-
-to bundle your application
