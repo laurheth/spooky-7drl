@@ -13,12 +13,20 @@ interface TilePlan {
     roomId: number;
 }
 
+interface RoomData {
+    center: number[];
+    xBounds: [number, number];
+    yBounds: [number, number];
+    expectedFloor: number;
+    expectedWall: number;
+}
+
 /**
  * Cool function to generate the map
  */
 export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomCount=10, multipleConnectionChance=0.5}:MapGenParams = {}) {
     const map = new Map<string, TilePlan>();
-    const roomCenters:number[][] = [];
+    const roomCenters:RoomData[] = [];
     const roomConnectionTracker:number[][] = [];
     const entitySpots:string[] = [];
     let maxY = 0;
@@ -52,13 +60,17 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         roomConnectionTracker.push([]);
 
         // Build the room
+        let floors = 0;
+        let walls = 0;
         for (let i=0; i<width; i++) {
             for (let j=0; j<height; j++) {
                 const key = `${i+x},${j+y}`;
                 if (i===0 || j===0 || i===(width-1) || j===(height-1)) {
                     if (!map.has(key)) {
+                        walls++;
                         map.set(key, {type:'#', roomId:roomCount});
                     } else if (map.get(key).type === '.') {
+                        floors++;
                         map.set(key, {type:'+', roomId:roomCount});
                     }
                 } else {
@@ -70,7 +82,13 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
 
         maxY = Math.max(maxY, y + height + 2);
         // Record roomCenter for future hallway math
-        roomCenters.push(roomCenter);
+        roomCenters.push({
+            center: roomCenter,
+            xBounds: [x, x+width-1],
+            yBounds: [y, y+height-1],
+            expectedFloor: floors,
+            expectedWall: walls
+        });
     }
 
     // We're going to use pathfinding to connect hallways
@@ -88,18 +106,19 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     // Lets get er done
     const neededWalls = new Set<string>();
     const possibleDoors = new Set<string>();
-    roomCenters.forEach((roomCenter, index) => {
+    roomCenters.forEach((roomData, index) => {
+        const roomCenter = roomData.center;
         const options = roomCenters.map((x,i) => i).filter(otherIndex => !roomConnectionTracker[index].includes(otherIndex));
         options.sort((indexA, indexB) => {
-            const roomA:number[] = roomCenters[indexA];
-            const roomB:number[] = roomCenters[indexB];
+            const roomA:number[] = roomCenters[indexA].center;
+            const roomB:number[] = roomCenters[indexB].center;
             return (Math.abs(roomA[0] - roomCenter[0]) + Math.abs(roomA[1] - roomCenter[1]) - Math.abs(roomB[0] - roomCenter[0]) + Math.abs(roomB[1] - roomCenter[1]))
         });
 
-        const connections = (multipleConnectionChance > Math.random()) ? 2 : 1;
+        const connections = Math.min((multipleConnectionChance > Math.random()) ? 2 : 1, options.length - 1);
         for (let i=0; i<connections; i++) {
             const otherIndex = options[i+1];
-            const otherCenter = roomCenters[otherIndex];
+            const otherCenter = roomCenters[otherIndex].center;
             currentPathingIds = [index, otherIndex];
             const path = pathfinder.findPath(roomCenter, otherCenter);
             if (path.length > 0) {
@@ -152,6 +171,29 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
 
     doorsToPrune.forEach(notADoor=>{
         map.get(notADoor).type = '.';
+    });
+
+    // Which rooms are deadends? Might be useful knowledge
+    const deadends:number[] = [];
+    roomCenters.forEach((roomData, index) => {
+        let floorCount = 0;
+        let wallCount = 0;
+        for (let x=roomData.xBounds[0]; x<=roomData.xBounds[1]; x++) {
+            for (let y=roomData.yBounds[0]; y<=roomData.yBounds[1]; y++) {
+                const key = `${x},${y}`;
+                if (!map.has(key)) {
+                    continue;
+                }
+                if (map.get(key).type === '.') {
+                    floorCount++;
+                } else if (map.get(key).type === '#') {
+                    wallCount++;
+                }
+            }
+        }
+        if (wallCount >= roomData.expectedWall - 1) {
+            deadends.push(index);
+        }
     });
 
     return {
