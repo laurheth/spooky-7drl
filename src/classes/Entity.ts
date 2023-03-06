@@ -27,7 +27,6 @@ class Entity {
     constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
-
         if (acts) {
             this.mapHandler.addActor(this);
         }

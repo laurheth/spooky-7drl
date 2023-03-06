@@ -4,6 +4,7 @@ import Player from "./Player"
 import Critter from "./Critter"
 import Entity from "./Entity"
 import Game from "./Game"
+import mapGenerator from "../util/mapGenerator"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -40,53 +41,46 @@ class MapHandler {
         this.tileContainer.removeChildren();
         this.tileMap.clear();
 
-        // TODO: A cool map generator here. Lets start simple.
-        for (let x=0; x<10; x++) {
-            for (let y=0; y<10; y++) {
-                let newTile: Tile;
-                if (x===0 || y===0 || x===9 || y===9) {
-                    // wall
-                    newTile = new Tile({
-                        passable: false,
-                        seeThrough: false,
-                        sprite: Sprite.from("tiles/testWall.png"), // TODO: cache sprites instead of regenerating them
-                        x: x * this.tileScale,
-                        y: y * this.tileScale,
-                        parent: this.tileContainer
-                    });
-                } else {
-                    // floor
-                    newTile = new Tile({
-                        passable: true,
-                        seeThrough: true,
-                        sprite: Sprite.from("tiles/testFloor.png"), // TODO: cache sprites instead of regenerating them
-                        x: x * this.tileScale,
-                        y: y * this.tileScale,
-                        parent: this.tileContainer
-                    });
-                }
-                // Store the tile
-                this.tileMap.set(`${x},${y},1`, newTile);
+        const generatedMap = mapGenerator();
+        
+        // Translate the generated map into tiles
+        generatedMap.map.forEach((tilePlan, key) => {
+            const [tx, ty] = key.split(',').map(x => parseInt(x));
+            let newTile: Tile;
+            if (tilePlan.type === '#') {
+                // wall
+                newTile = new Tile({
+                    passable: false,
+                    seeThrough: false,
+                    sprite: Sprite.from("tiles/testWall.png"), // TODO: cache sprites instead of regenerating them. Also, use a spriteSheet
+                    x: tx * this.tileScale,
+                    y: ty * this.tileScale,
+                    parent: this.tileContainer
+                });
+            } else {
+                // floor
+                newTile = new Tile({
+                    passable: true,
+                    seeThrough: true,
+                    sprite: Sprite.from("tiles/testFloor.png"), // TODO: cache sprites instead of regenerating them
+                    x: tx * this.tileScale,
+                    y: ty * this.tileScale,
+                    parent: this.tileContainer
+                });
             }
-        }
+            this.tileMap.set(`${tx},${ty},1`, newTile);
+        });
+
+        const [px, py] = generatedMap.playerStart.split(',').map(x => parseInt(x));
 
         // Add in the player
         const player = new Player({
             sprite: Sprite.from("sprites/testFace.png"),
-            x: 3,
-            y: 3,
+            x: px,
+            y: py,
             z: 1,
             mapHandler: this
         });
-
-        // Add in a test critter
-        const critter = new Critter({
-            critterType: "testCritter",
-            x: 5,
-            y: 5,
-            z: 1,
-            mapHandler: this
-        })
     }
 
     // Get the tile at the given location
