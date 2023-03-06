@@ -9,6 +9,7 @@ const tilePrefix = "tiles/";
 const tileList = [
     "testFloor",
     "testWall",
+    "testDoor",
 ]
 
 const spritePrefix = "sprites/";

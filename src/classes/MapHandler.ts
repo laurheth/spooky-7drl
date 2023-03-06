@@ -57,12 +57,22 @@ class MapHandler {
                     y: ty * this.tileScale,
                     parent: this.tileContainer
                 });
+            } else if (tilePlan.type === '+') {
+                // door
+                newTile = new Tile({
+                    passable: true,
+                    seeThrough: true,
+                    sprite: Sprite.from("tiles/testDoor.png"),
+                    x: tx * this.tileScale,
+                    y: ty * this.tileScale,
+                    parent: this.tileContainer
+                });
             } else {
                 // floor
                 newTile = new Tile({
                     passable: true,
                     seeThrough: true,
-                    sprite: Sprite.from("tiles/testFloor.png"), // TODO: cache sprites instead of regenerating them
+                    sprite: Sprite.from("tiles/testFloor.png"),
                     x: tx * this.tileScale,
                     y: ty * this.tileScale,
                     parent: this.tileContainer
