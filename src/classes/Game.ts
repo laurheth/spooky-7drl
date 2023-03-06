@@ -1,5 +1,6 @@
-import { Application, settings, SCALE_MODES, ParticleContainer, Container, BaseTexture } from "pixi.js"
+import { Application, SCALE_MODES, Container, BaseTexture } from "pixi.js"
 import MapHandler from "./MapHandler"
+import Player from "./Player"
 
 /**
  * This class encapsulates game setup, keeps track of the Pixi.js app, and some related functionality.
@@ -19,7 +20,9 @@ class Game {
 
     mapHandler: MapHandler;
 
-    constructor() {
+    player: Player|null = null;
+
+    init() {
         // Initialize the Pixi application.
         this.pixiApp = new Application({
             backgroundColor: 0x000000,
@@ -45,8 +48,7 @@ class Game {
         this.mapHandler = new MapHandler({
             tileContainer: this.tileContainer,
             spriteContainer: this.spriteContainer,
-            tileScale: 32,
-            game: this
+            tileScale: 32
         });
 
         // Handle resizing.
@@ -54,6 +56,9 @@ class Game {
 
         // Call handleResize once for the initial size.
         this.handleResize();
+
+        // Handle input
+        window.addEventListener("keydown", event => this.handleInput(event));
     }
 
     // Deal with resizing of the browser window
@@ -68,6 +73,26 @@ class Game {
     newMap() {
         this.mapHandler.generateNewMap({level: 1});
     }
+
+    // Input handler. Pass it to the player entity.
+    handleInput(event:KeyboardEvent) {
+        if (this.player) {
+            this.player.handleInput(event);
+        }
+    }
 }
 
-export default Game;
+// Game should be a singleton.
+class GameInstance {
+    static instance: Game = undefined;
+    
+    static getInstance(): Game {
+        if (!GameInstance.instance) {
+            GameInstance.instance = new Game();
+            GameInstance.instance.init();
+        }
+        return GameInstance.instance;
+    }
+}
+
+export default GameInstance;

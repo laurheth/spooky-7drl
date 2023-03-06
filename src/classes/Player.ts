@@ -1,4 +1,5 @@
-import { default as Entity, EntityParams } from "./Entity";
+import { default as Entity, EntityParams } from "./Entity"
+import Game from "./Game"
 
 interface PlayerParams extends EntityParams {
     // Anything extra?
@@ -10,9 +11,7 @@ interface PlayerParams extends EntityParams {
 class Player extends Entity {
     constructor(params: PlayerParams) {
         super(params);
-        params.mapHandler.player = this;
-        // Input listener
-        window.addEventListener("keydown", event => this.handleInput(event));
+        Game.getInstance().player = this;
     }
 
     handleInput(event:KeyboardEvent) {

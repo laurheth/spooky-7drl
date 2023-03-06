@@ -1,14 +1,13 @@
-import { Container, ICanvas, IRenderer, Sprite } from "pixi.js"
+import { Container, IRenderer, Sprite } from "pixi.js"
 import Tile from "./Tile"
 import Player from "./Player"
-import Entity from "./Entity";
-import Game from "./Game";
+import Entity from "./Entity"
+import Game from "./Game"
 
 interface MapHandlerParams {
     tileContainer: Container;
     spriteContainer: Container;
     tileScale: number;
-    game: Game;
 }
 
 interface NewMapParams {
@@ -24,15 +23,12 @@ class MapHandler {
     spriteContainer: Container;
     tileMap: Map<string, Tile>;
     tileScale: number;
-    player: Player|null = null;
-    game: Game;
 
-    constructor({tileContainer, spriteContainer, tileScale, game}:MapHandlerParams) {
+    constructor({tileContainer, spriteContainer, tileScale}:MapHandlerParams) {
         this.tileContainer = tileContainer;
         this.spriteContainer = spriteContainer;
         this.tileScale = tileScale;
         this.tileMap = new Map<string, Tile>();
-        this.game = game;
     }
 
     // Generate a new map!
@@ -95,8 +91,9 @@ class MapHandler {
     recenter(target:Entity = null) {
         // No target, use the player
         if (!target) {
-            if (this.player) {
-                target = this.player;
+            const player = Game.getInstance().player;
+            if (player) {
+                target = player;
             } else {
                 // No player? Forget it.
                 return;
@@ -105,7 +102,7 @@ class MapHandler {
         const targetX = target.sprite.x;
         const targetY = target.sprite.y;
 
-        const view:IRenderer = this.game.pixiApp.renderer;
+        const view:IRenderer = Game.getInstance().pixiApp.renderer;
         const x = view.width / (devicePixelRatio * 2) - targetX - this.tileScale/2;
         const y = view.height / (devicePixelRatio *2) - targetY - this.tileScale/2;
 
