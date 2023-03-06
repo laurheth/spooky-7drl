@@ -5,6 +5,7 @@ import Critter from "./Critter"
 import Entity from "./Entity"
 import Game from "./Game"
 import mapGenerator from "../util/mapGenerator"
+import VisionHandler from "./VisionHandler"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -27,12 +28,17 @@ class MapHandler {
     tileScale: number;
     actors: Entity[] = [];
     active: boolean = false;
+    visionHandler: VisionHandler;
 
     constructor({tileContainer, spriteContainer, tileScale}:MapHandlerParams) {
         this.tileContainer = tileContainer;
         this.spriteContainer = spriteContainer;
         this.tileScale = tileScale;
         this.tileMap = new Map<string, Tile>();
+        this.visionHandler = new VisionHandler({
+            range: 8,
+            getTileFunction: (position) => this.getTile(position[0], position[1], position[2])
+        });
     }
 
     // Generate a new map!
@@ -149,6 +155,11 @@ class MapHandler {
                 }
             }
         }
+    }
+
+    // Update vision
+    updateVision(position:number[]) {
+        this.visionHandler.see(position)
     }
 }
 

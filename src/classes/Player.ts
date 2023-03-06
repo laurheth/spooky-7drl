@@ -57,6 +57,7 @@ class Player extends Entity {
     }
 
     async act() {
+        this.mapHandler.updateVision([this.x, this.y, this.z]);
         await new Promise((resolve) => {
             this.playerTurn = resolve;
         });
