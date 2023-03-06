@@ -1,6 +1,7 @@
 import { Container, IRenderer, Sprite } from "pixi.js"
 import Tile from "./Tile"
 import Player from "./Player"
+import Critter from "./Critter"
 import Entity from "./Entity"
 import Game from "./Game"
 
@@ -23,6 +24,8 @@ class MapHandler {
     spriteContainer: Container;
     tileMap: Map<string, Tile>;
     tileScale: number;
+    actors: Entity[] = [];
+    active: boolean = false;
 
     constructor({tileContainer, spriteContainer, tileScale}:MapHandlerParams) {
         this.tileContainer = tileContainer;
@@ -74,6 +77,15 @@ class MapHandler {
             y: 3,
             z: 1,
             mapHandler: this
+        });
+
+        // Add in a test critter
+        const critter = new Critter({
+            critterType: "testCritter",
+            x: 5,
+            y: 5,
+            z: 1,
+            mapHandler: this
         })
     }
 
@@ -110,6 +122,29 @@ class MapHandler {
         this.tileContainer.y = y;
         this.spriteContainer.x = x;
         this.spriteContainer.y = y;
+    }
+
+    addActor(actor:Entity) {
+        this.actors.push(actor);
+    }
+
+    removeActor(actor:Entity) {
+        const index = this.actors.indexOf(actor);
+        this.actors.splice(index, 1);
+    }
+
+    // Kick the actors into motion
+    async startActing() {
+        if (!this.active) {
+            this.active = true;
+            while (this.active) {
+                const actor = this.actors.shift();
+                if (actor) {
+                    this.actors.push(actor);
+                    await actor.act();
+                }
+            }
+        }
     }
 }
 

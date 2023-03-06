@@ -8,6 +8,8 @@ export interface EntityParams {
     x: number;
     y: number;
     z: number;
+    hp?: number;
+    acts?: boolean;
 }
 
 /**
@@ -20,15 +22,23 @@ class Entity {
     x: number = 0;
     y: number = 0;
     z: number = 1;
-    constructor({sprite, mapHandler, x, y, z}:EntityParams) {
+    hp: number;
+    active: boolean = true;
+    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
+
+        if (acts) {
+            this.mapHandler.addActor(this);
+        }
+
         this.mapHandler.spriteContainer.addChild(this.sprite);
         this.sprite.visible = false;
         // Move self to starting location
         if (this.moveTo(x, y, z, true)) {
             this.sprite.visible = true;
         }
+        this.hp = hp;
     }
 
     // Move to a location
@@ -74,6 +84,29 @@ class Entity {
     // Get acted upon
     actUpon(actor:Entity) {
         // Stub
+    }
+
+    // Act!
+    async act() {
+        // Stub
+    }
+
+    // Harm this entity
+    damage(damage:number, attacker:Entity = null) {
+        this.hp -= damage;
+        if (this.hp <= 0) {
+            this.die();
+        }
+    }
+
+    die() {
+        this.active = false;
+        if (this.currentTile) {
+            // Remove self from previous tile
+            this.currentTile.entity = null;
+            this.currentTile = null;
+        }
+        this.sprite.visible = false;
     }
 }
 

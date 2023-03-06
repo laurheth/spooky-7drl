@@ -14,6 +14,7 @@ const tileList = [
 const spritePrefix = "sprites/";
 const spriteList = [
     "testFace",
+    "testCritter",
 ]
 
 const suffix = ".png";

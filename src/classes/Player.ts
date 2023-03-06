@@ -9,34 +9,44 @@ interface PlayerParams extends EntityParams {
  * The player!
  */
 class Player extends Entity {
+
+    // Resolve function from the Promise in Player::act
+    playerTurn: (value:unknown)=>void;
+
     constructor(params: PlayerParams) {
+        params.acts = true;
         super(params);
         Game.getInstance().player = this;
     }
 
     handleInput(event:KeyboardEvent) {
-        switch(event.key) {
-            case "a":
-            case "Left":
-            case "ArrowLeft":
-                this.step(-1, 0, 0);
-                break;
-            case "d":
-            case "Right":
-            case "ArrowRight":
-                this.step(1, 0, 0);
-                break;
-            case "Up":
-            case "w":
-            case "ArrowUp":
-                this.step(0, -1, 0);
-                break;
-            case "Down":
-            case "s":
-            case "ArrowDown":
-                this.step(0, 1, 0);
-                break;
-
+        if (this.playerTurn && this.active) {
+            let turnDone = false;
+            switch(event.key) {
+                case "a":
+                case "Left":
+                case "ArrowLeft":
+                    turnDone = this.step(-1, 0, 0);
+                    break;
+                case "d":
+                case "Right":
+                case "ArrowRight":
+                    turnDone = this.step(1, 0, 0);
+                    break;
+                case "Up":
+                case "w":
+                case "ArrowUp":
+                    turnDone = this.step(0, -1, 0);
+                    break;
+                case "Down":
+                case "s":
+                case "ArrowDown":
+                    turnDone = this.step(0, 1, 0);
+                    break;
+            }
+            if (turnDone) {
+                this.playerTurn(true);
+            }
         }
     }
 
@@ -44,6 +54,12 @@ class Player extends Entity {
         const success = super.moveTo(x, y, z, immediate);
         this.mapHandler.recenter(this);
         return success;
+    }
+
+    async act() {
+        await new Promise((resolve) => {
+            this.playerTurn = resolve;
+        });
     }
 }
 

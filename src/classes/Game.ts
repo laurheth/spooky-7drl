@@ -72,6 +72,7 @@ class Game {
     // Start a new map
     newMap() {
         this.mapHandler.generateNewMap({level: 1});
+        this.mapHandler.startActing();
     }
 
     // Input handler. Pass it to the player entity.
