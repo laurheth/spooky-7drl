@@ -1,5 +1,7 @@
 import { default as Entity, EntityParams } from "./Entity"
 import Game from "./Game"
+import Item from "./Item"
+import Logger from "./Logger"
 
 interface PlayerParams extends EntityParams {
     // Anything extra?
@@ -19,6 +21,10 @@ class Player extends Entity {
 
     updateVisionDelay:number = 0;
 
+    inventory:Item[] = [];
+
+    maxItems:number = 6;
+
     constructor(params: PlayerParams) {
         params.acts = true;
         params.actPeriod = 200;
@@ -26,8 +32,8 @@ class Player extends Entity {
         Game.getInstance().player = this;
     }
 
-    handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup"|"buffer") {
-        if (eventType === "keydown" || eventType === "buffer") {
+    handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup"|"buffer"|"repeat") {
+        if (eventType === "keydown" || eventType === "buffer" || eventType === "repeat") {
             if (eventType !== "buffer") {
                 this.previousInput = event;
             }
@@ -54,6 +60,41 @@ class Player extends Entity {
                     case "ArrowDown":
                         turnDone = this.step(0, 1, 0);
                         break;
+                    case "g": // get
+                    case "p": // put
+                        if (eventType === "repeat") {
+                            // Don't repeat picking up.
+                            break;
+                        }
+                        const tile = this.mapHandler.getTile(this.x, this.y, this.z);
+                        if (tile && tile.item) {
+                            if (this.inventory.length < this.maxItems) {
+                                Logger.getInstance().sendMessage(`You pick up the ${tile.item.name}.`);
+                                this.inventory.push(tile.item);
+                                tile.item.pickUp();
+                                turnDone = true;
+                            } else {
+                                Logger.getInstance().sendMessage("Your inventory is full! Use or drop something first.");
+                            }
+                        } else {
+                            Logger.getInstance().sendMessage("There is nothing here to pick up.");
+                        }
+                        break;
+                    case "r": // ...recycle?
+                        if (eventType === "repeat") {
+                            // Don't repeat dropping.
+                            break;
+                        }
+                        const item = this.inventory.pop();
+                        if (item) {
+                            if(item.drop(this.x, this.y, this.z)) {
+                                Logger.getInstance().sendMessage(`You drop the ${item.name}.`);
+                            } else {
+                                Logger.getInstance().sendMessage(`The floor is too cluttered to drop the ${item.name}!`);
+                            }
+                        } else {
+                            Logger.getInstance().sendMessage("You aren't holding anything!");
+                        }
                 }
                 if (turnDone) {
                     this.clock = 0;
@@ -69,6 +110,9 @@ class Player extends Entity {
 
     moveTo(x:number, y:number, z:number, immediate = false): boolean {
         const success = super.moveTo(x, y, z, immediate);
+        if (success && this.currentTile && this.currentTile.item) {
+            Logger.getInstance().sendMessage(`You see at your feet at ${this.currentTile.item.name}.`);
+        }
         this.updateVisionDelay = this.actPeriod / 2;
         this.mapHandler.recenter(this);
         return success;
@@ -95,7 +139,7 @@ class Player extends Entity {
             this.handleInput(this.inputBuffer, "buffer");
             this.inputBuffer = null;
         } else if (this.previousInput) {
-            this.handleInput(this.previousInput, "keydown");
+            this.handleInput(this.previousInput, "repeat");
         }
     }
 }

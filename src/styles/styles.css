@@ -27,6 +27,19 @@ canvas {
     height: 100px;
     border-top: 2px solid orangered;
     padding: 5px;
+    overflow: hidden;
+}
+
+.important {
+    font-weight: bolder;
+}
+
+.good {
+    color: yellow;
+}
+
+.bad {
+    color: red;
 }
 
 ul {

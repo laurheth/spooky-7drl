@@ -6,7 +6,7 @@ import Entity from "./Entity"
 import Game from "./Game"
 import mapGenerator from "../util/mapGenerator"
 import VisionHandler from "./VisionHandler"
-import { objectFactory } from "../util/entityTypes"
+import { objectFactory, itemFactory } from "../util/entityTypes"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -102,10 +102,17 @@ class MapHandler {
             mapHandler: this
         });
 
+        // Add non-interactable decorations
         generatedMap.decorations.forEach(decoration => {
             const decoSprite = Sprite.from(`decoration/${decoration.name}.png`);
             const tile = this.tileMap.get(`${decoration.key},1`);
             tile.addDecoration(decoSprite);
+        });
+
+        // Add items
+        generatedMap.items.forEach(item => {
+            const [tx, ty] = item.key.split(',').map(x => parseInt(x));
+            itemFactory({x:tx, y:ty, z:1}, item.name, this);
         });
 
         this.spriteContainer.sortChildren();

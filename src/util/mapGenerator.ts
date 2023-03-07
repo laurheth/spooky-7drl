@@ -26,6 +26,11 @@ interface DecorationData {
     key: string;
 }
 
+interface ItemData {
+    name: "sword";
+    key: string;
+}
+
 /**
  * Cool function to generate the map
  */
@@ -165,6 +170,10 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     // Prune invalid doors
     const doorsToPrune = new Set<string>();
     possibleDoors.forEach(key => {
+        const spotIndex = entitySpots.indexOf(key);
+        if (spotIndex >= 0) {
+            entitySpots.splice(spotIndex, 1);
+        }
         const [x, y] = key.split(',').map(x=>parseInt(x));
         [[-1,0],[1,0],[0,1],[0,-1]].forEach(step => {
             const otherKey = `${x + step[0]},${y + step[1]}`;
@@ -212,13 +221,23 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
             key: spot,
             name: "bloodPool"
         })
-    })
+    });
+
+    // Add some items
+    const items:ItemData[] = [];
+    for (let i=0; i<20; i++) {
+        items.push({
+            name: "sword",
+            key: randomElement(entitySpots),
+        })
+    }
 
     return {
         map: map,
         roomCenters: roomCenters,
         playerStart: randomElement(entitySpots),
-        decorations: decorations
+        decorations: decorations,
+        items: items
     }
 }
 

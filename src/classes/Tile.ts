@@ -1,5 +1,6 @@
 import { Sprite, Container, utils } from "pixi.js"
 import Entity from "./Entity"
+import Item from "./Item"
 
 interface TileParams {
     passable: boolean;
@@ -21,6 +22,7 @@ class Tile {
     light: number;
     seen: boolean;
     entity: Entity|null;
+    item: Item|null;
     decoration: Sprite;
 
     constructor({passable, seeThrough, sprite, x, y, parent}:TileParams) {
@@ -39,14 +41,18 @@ class Tile {
 
     see(light:number) {
         this.light = light;
-        this.visible = true;
-        this.seen = true;
-        this.sprite.visible = true;
+        this.visible = light > 0;
+        this.seen = this.seen || this.visible;
+        this.sprite.visible = this.visible;
         const clampedLight = Math.max(Math.min(light, 1), 0);
         const tint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
         this.sprite.tint = tint;
         if (this.decoration) {
             this.decoration.tint = tint;
+        }
+        if (this.item) {
+            this.item.sprite.visible = this.visible;
+            this.item.sprite.tint = tint;
         }
     }
 
@@ -54,6 +60,9 @@ class Tile {
         this.visible = false;
         this.sprite.visible = false;
         this.light = -1;
+        if (this.item) {
+            this.item.sprite.visible = false;
+        }
     }
 
     get seeThrough(): boolean {

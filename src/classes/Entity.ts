@@ -1,6 +1,8 @@
 import { Sprite, utils } from "pixi.js"
 import MapHandler from "./MapHandler"
 import Tile from "./Tile"
+import Logger from "./Logger"
+import Player from "./Player"
 
 type ActionTypes = "open";
 
@@ -111,6 +113,12 @@ class Entity {
                         this.currentTile.entity = null;
                         this.currentTile = null;
                         this.mapHandler.updateVision();
+
+                        if (actor instanceof Player) {
+                            Logger.getInstance().sendMessage("You open the door.");
+                        } else if (rememberTile && rememberTile.visible) {
+                            Logger.getInstance().sendMessage("The door opens.");
+                        }
                     }
                     this.sprite.visible = false;
 
@@ -120,6 +128,9 @@ class Entity {
                                 this.currentTile = rememberTile;
                                 this.currentTile.entity = this;
                                 this.mapHandler.updateVision();
+                                if (rememberTile.visible) {
+                                    Logger.getInstance().sendMessage("The door closes.");
+                                }
                             } else {
                                 return false;
                             }

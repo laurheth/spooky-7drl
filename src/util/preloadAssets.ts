@@ -16,6 +16,7 @@ const spritePrefix = "sprites/";
 const spriteList = [
     "testFace",
     "testCritter",
+    "testSword",
 ]
 
 const decorationsPrefix = "decoration/";

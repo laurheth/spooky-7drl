@@ -1,5 +1,6 @@
 import { Sprite } from "pixi.js"
 import Entity from "../classes/Entity"
+import Item from "../classes/Item"
 import MapHandler from "../classes/MapHandler"
 
 /**
@@ -29,4 +30,16 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
             })
     }
     return null;
+}
+
+export function itemFactory(position:{x:number, y:number, z:number}, typeName:string, mapHandler:MapHandler): Item {
+    switch(typeName) {
+        case "sword":
+            return new Item({
+                sprite: Sprite.from("sprites/testSword.png"),
+                mapHandler: mapHandler,
+                ...position,
+                name: "sword"
+            })
+    }
 }
