@@ -21,6 +21,7 @@ class Tile {
     light: number;
     seen: boolean;
     entity: Entity|null;
+    decoration: Sprite;
 
     constructor({passable, seeThrough, sprite, x, y, parent}:TileParams) {
         this.passable = passable;
@@ -44,6 +45,9 @@ class Tile {
         const clampedLight = Math.max(Math.min(light, 1), 0);
         const tint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
         this.sprite.tint = tint;
+        if (this.decoration) {
+            this.decoration.tint = tint;
+        }
     }
 
     unsee() {
@@ -54,6 +58,13 @@ class Tile {
 
     get seeThrough(): boolean {
         return this._seeThrough && (!this.entity || !this.entity.blocksVision);
+    }
+
+    addDecoration(decoration:Sprite) {
+        if (!this.decoration) {
+            this.decoration = decoration
+            this.sprite.addChild(decoration);
+        }
     }
 }
 

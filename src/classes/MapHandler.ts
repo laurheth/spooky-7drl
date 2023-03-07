@@ -101,6 +101,14 @@ class MapHandler {
             z: 1,
             mapHandler: this
         });
+
+        generatedMap.decorations.forEach(decoration => {
+            const decoSprite = Sprite.from(`decoration/${decoration.name}.png`);
+            const tile = this.tileMap.get(`${decoration.key},1`);
+            tile.addDecoration(decoSprite);
+        });
+
+        this.spriteContainer.sortChildren();
     }
 
     // Get the tile at the given location

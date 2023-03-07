@@ -18,6 +18,11 @@ const spriteList = [
     "testCritter",
 ]
 
+const decorationsPrefix = "decoration/";
+const decorationList = [
+    "bloodPool",
+]
+
 const suffix = ".png";
 
 async function preloadAssets() {
@@ -29,6 +34,11 @@ async function preloadAssets() {
     // Sprites
     for (const sprite of spriteList) {
         await Assets.load(`${assetPrefix}${spritePrefix}${sprite}${suffix}`);
+    }
+
+    // Decorations
+    for (const decoration of decorationList) {
+        await Assets.load(`${assetPrefix}${decorationsPrefix}${decoration}${suffix}`);
     }
 }
 

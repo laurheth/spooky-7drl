@@ -21,6 +21,11 @@ interface RoomData {
     expectedWall: number;
 }
 
+interface DecorationData {
+    name: "bloodPool";
+    key: string;
+}
+
 /**
  * Cool function to generate the map
  */
@@ -196,10 +201,24 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         }
     });
 
+    const decorations:DecorationData[] = [];
+    // Splatter some blood
+    const bloodSpots = new Set<string>();
+    for (let i=0; i<20; i++) {
+        bloodSpots.add(randomElement(entitySpots));
+    }
+    bloodSpots.forEach(spot => {
+        decorations.push({
+            key: spot,
+            name: "bloodPool"
+        })
+    })
+
     return {
         map: map,
         roomCenters: roomCenters,
-        playerStart: randomElement(entitySpots)
+        playerStart: randomElement(entitySpots),
+        decorations: decorations
     }
 }
 
