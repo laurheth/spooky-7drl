@@ -1,6 +1,8 @@
-import { Sprite } from "pixi.js"
+import { Sprite, utils } from "pixi.js"
 import MapHandler from "./MapHandler"
 import Tile from "./Tile"
+
+type ActionTypes = "open";
 
 export interface EntityParams {
     sprite: Sprite;
@@ -10,6 +12,8 @@ export interface EntityParams {
     z: number;
     hp?: number;
     acts?: boolean;
+    blocksVision?: boolean;
+    actionTypes?: ActionTypes[];
 }
 
 /**
@@ -22,9 +26,11 @@ class Entity {
     x: number = 0;
     y: number = 0;
     z: number = 1;
+    blocksVision: boolean;
     hp: number;
     active: boolean = true;
-    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false}:EntityParams) {
+    actionTypes: ActionTypes[];
+    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[]}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
         if (acts) {
@@ -34,10 +40,10 @@ class Entity {
         this.mapHandler.spriteContainer.addChild(this.sprite);
         this.sprite.visible = false;
         // Move self to starting location
-        if (this.moveTo(x, y, z, true)) {
-            this.sprite.visible = true;
-        }
+        this.moveTo(x, y, z, true);
         this.hp = hp;
+        this.blocksVision = blocksVision;
+        this.actionTypes = actionTypes;
     }
 
     // Move to a location
@@ -82,7 +88,20 @@ class Entity {
 
     // Get acted upon
     actUpon(actor:Entity) {
-        // Stub
+        console.log("actUpon");
+        this.actionTypes.forEach(actionType => {
+            switch(actionType) {
+                case "open":
+                    console.log("open?");
+                    if (this.currentTile) {
+                        // Remove self from previous tile
+                        this.currentTile.entity = null;
+                        this.currentTile = null;
+                    }
+                    this.sprite.visible = false;
+                    break; 
+            }
+        });
     }
 
     // Act!
@@ -106,6 +125,17 @@ class Entity {
             this.currentTile = null;
         }
         this.sprite.visible = false;
+    }
+
+    setVisibility(light:number) {
+        if (light > 0) {
+            const clampedLight = Math.max(Math.min(light, 1), 0);
+            const tint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
+            this.sprite.tint = tint;
+            this.sprite.visible = true;
+        } else {
+            this.sprite.visible = false;
+        }
     }
 }
 

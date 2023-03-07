@@ -6,6 +6,7 @@ import Entity from "./Entity"
 import Game from "./Game"
 import mapGenerator from "../util/mapGenerator"
 import VisionHandler from "./VisionHandler"
+import { objectFactory } from "../util/entityTypes"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -63,16 +64,19 @@ class MapHandler {
                     y: ty * this.tileScale,
                     parent: this.tileContainer
                 });
+                this.tileMap.set(`${tx},${ty},1`, newTile);
             } else if (tilePlan.type === '+') {
                 // door
                 newTile = new Tile({
                     passable: true,
                     seeThrough: true,
-                    sprite: Sprite.from("tiles/testDoor.png"),
+                    sprite: Sprite.from("tiles/testFloor.png"),
                     x: tx * this.tileScale,
                     y: ty * this.tileScale,
                     parent: this.tileContainer
                 });
+                this.tileMap.set(`${tx},${ty},1`, newTile);
+                objectFactory({x:tx,y:ty,z:1}, "door", this);
             } else {
                 // floor
                 newTile = new Tile({
@@ -83,8 +87,8 @@ class MapHandler {
                     y: ty * this.tileScale,
                     parent: this.tileContainer
                 });
+                this.tileMap.set(`${tx},${ty},1`, newTile);
             }
-            this.tileMap.set(`${tx},${ty},1`, newTile);
         });
 
         const [px, py] = generatedMap.playerStart.split(',').map(x => parseInt(x));

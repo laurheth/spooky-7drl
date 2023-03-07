@@ -15,7 +15,7 @@ interface TileParams {
  */
 class Tile {
     passable: boolean;
-    seeThrough: boolean;
+    _seeThrough: boolean;
     sprite: Sprite;
     visible: boolean;
     light: number;
@@ -24,7 +24,7 @@ class Tile {
 
     constructor({passable, seeThrough, sprite, x, y, parent}:TileParams) {
         this.passable = passable;
-        this.seeThrough = seeThrough;
+        this._seeThrough = seeThrough;
         this.seen = false; // Start not previously seen
         this.visible = false; // Start not currently visible
         this.entity = null; // Start with no resident entity
@@ -42,12 +42,18 @@ class Tile {
         this.seen = true;
         this.sprite.visible = true;
         const clampedLight = Math.max(Math.min(light, 1), 0);
-        this.sprite.tint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
+        const tint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
+        this.sprite.tint = tint;
     }
 
     unsee() {
         this.visible = false;
         this.sprite.visible = false;
+        this.light = -1;
+    }
+
+    get seeThrough(): boolean {
+        return this._seeThrough && (!this.entity || !this.entity.blocksVision);
     }
 }
 
