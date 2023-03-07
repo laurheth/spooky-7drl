@@ -23,6 +23,8 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 mapHandler: mapHandler,
                 blocksVision: true,
                 ...position,
+                acts: true,
+                actPeriod: 5000,
                 actionTypes:["open"]
             })
     }

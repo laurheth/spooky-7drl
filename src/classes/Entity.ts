@@ -37,6 +37,7 @@ class Entity {
     actionTypes: ActionTypes[];
     clock: number = 0;
     actPeriod: number;
+    actionQueue: (()=>boolean)[] = [];
     constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], actPeriod=1000}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
@@ -103,13 +104,29 @@ class Entity {
         this.actionTypes.forEach(actionType => {
             switch(actionType) {
                 case "open":
+                    let rememberTile:Tile = null;
                     if (this.currentTile) {
+                        rememberTile = this.currentTile;
                         // Remove self from previous tile
                         this.currentTile.entity = null;
                         this.currentTile = null;
                         this.mapHandler.updateVision();
                     }
                     this.sprite.visible = false;
+
+                    if (rememberTile) {
+                        const closeAction = () => {
+                            if (!rememberTile.entity) {
+                                this.currentTile = rememberTile;
+                                this.currentTile.entity = this;
+                                this.mapHandler.updateVision();
+                            } else {
+                                return false;
+                            }
+                        }
+                        this.actionQueue.push(closeAction);
+                        this.clock = 0;
+                    }
                     break; 
             }
         });
@@ -117,7 +134,12 @@ class Entity {
 
     // Act!
     act() {
-        // Stub
+        const action = this.actionQueue.shift();
+        if (action) {
+            if (!action()) {
+                this.actionQueue.push(action);
+            }
+        }
     }
 
     tick(deltaMS:number) {
