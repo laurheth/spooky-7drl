@@ -162,8 +162,19 @@ class MapHandler {
     }
 
     // Update vision
-    updateVision(position:number[]) {
-        this.visionHandler.see(position)
+    updateVision(position:number[]=undefined) {
+        if (!position) {
+            const player = Game.getInstance().player;
+            if (player) {
+                this.visionHandler.see([player.x, player.y, player.z]);
+            }
+        } else {
+            this.visionHandler.see(position)
+        }
+    }
+
+    tick(deltaMS:number) {
+        this.actors.forEach(actor => actor.tick(deltaMS));
     }
 }
 

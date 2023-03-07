@@ -14,6 +14,7 @@ export interface EntityParams {
     acts?: boolean;
     blocksVision?: boolean;
     actionTypes?: ActionTypes[];
+    actPeriod?:number;
 }
 
 /**
@@ -26,11 +27,17 @@ class Entity {
     x: number = 0;
     y: number = 0;
     z: number = 1;
+    spriteX: number = 0;
+    spriteY: number = 0;
+    spriteSpeed: number;
+    spriteMoving: boolean = false;
     blocksVision: boolean;
     hp: number;
     active: boolean = true;
     actionTypes: ActionTypes[];
-    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[]}:EntityParams) {
+    clock: number = 0;
+    actPeriod: number;
+    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], actPeriod=1000}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
         if (acts) {
@@ -44,6 +51,8 @@ class Entity {
         this.hp = hp;
         this.blocksVision = blocksVision;
         this.actionTypes = actionTypes;
+        this.actPeriod = actPeriod;
+        this.spriteSpeed = 1 / (this.actPeriod);
     }
 
     // Move to a location
@@ -66,14 +75,17 @@ class Entity {
                 }
                 tile.entity = this;
                 this.currentTile = tile;
+                this.spriteX = x * this.mapHandler.tileScale;
+                this.spriteY = y * this.mapHandler.tileScale;
                 if (immediate) {
-                    this.sprite.x = x * this.mapHandler.tileScale;
-                    this.sprite.y = y * this.mapHandler.tileScale;
+                    this.sprite.x = this.spriteX;
+                    this.sprite.y = this.spriteY;
                 } else {
                     // Figure out smooth sliding later. For now, still immediate.
-                    this.sprite.x = x * this.mapHandler.tileScale;
-                    this.sprite.y = y * this.mapHandler.tileScale;
+                    this.spriteMoving = true;
                 }
+                // Update visibility
+                this.setVisibility(this.currentTile.light);
                 return true;
             }
         } else {
@@ -88,15 +100,14 @@ class Entity {
 
     // Get acted upon
     actUpon(actor:Entity) {
-        console.log("actUpon");
         this.actionTypes.forEach(actionType => {
             switch(actionType) {
                 case "open":
-                    console.log("open?");
                     if (this.currentTile) {
                         // Remove self from previous tile
                         this.currentTile.entity = null;
                         this.currentTile = null;
+                        this.mapHandler.updateVision();
                     }
                     this.sprite.visible = false;
                     break; 
@@ -105,8 +116,41 @@ class Entity {
     }
 
     // Act!
-    async act() {
+    act() {
         // Stub
+    }
+
+    tick(deltaMS:number) {
+        this.clock += deltaMS;
+        if (this.spriteMoving) {
+            this.moveSprite(deltaMS);
+        }
+
+        if (this.clock >= this.actPeriod) {
+            this.clock -= this.actPeriod;
+            this.act();
+        }
+    }
+
+    moveSprite(deltaMS:number) {
+        const spriteStep = deltaMS * this.spriteSpeed * this.mapHandler.tileScale;
+        const dist = [ this.spriteX - this.sprite.x, this.spriteY - this.sprite.y ];
+        if (Math.abs(dist[0]) < spriteStep && Math.abs(dist[1]) < spriteStep) {
+            this.sprite.x = this.spriteX;
+            this.sprite.y = this.spriteY;
+            this.spriteMoving = false;
+        } else {
+            if (Math.abs(dist[0]) < spriteStep) {
+                this.sprite.x = this.spriteX;
+            } else {
+                this.sprite.x += spriteStep * Math.sign(dist[0]);
+            }
+            if (Math.abs(dist[1]) < spriteStep) {
+                this.sprite.y = this.spriteY;
+            } else {
+                this.sprite.y += spriteStep * Math.sign(dist[1]);
+            }
+        }
     }
 
     // Harm this entity

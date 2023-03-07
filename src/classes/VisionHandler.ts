@@ -27,7 +27,6 @@ class VisionHandler {
         this.seen = new Set();
         this.range = range;
         this.lightScale = 1 / (Math.sqrt(minLight) * range);
-        console.log(this.lightScale);
         this.getTileFunction = getTileFunction;
         this.sqrRange = range**2;
         this.recentlyUnseen = new Set();

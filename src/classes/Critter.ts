@@ -25,7 +25,7 @@ class Critter extends Entity {
         });
     }
 
-    async act() {
+    act() {
         const dx = Math.floor(Math.random() * 3 - 1);
         const dy = Math.floor(Math.random() * 3 - 1);
         this.step(dx, dy, 0);

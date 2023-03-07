@@ -1,4 +1,4 @@
-import { Application, SCALE_MODES, Container, BaseTexture } from "pixi.js"
+import { Application, SCALE_MODES, Container, BaseTexture, Ticker } from "pixi.js"
 import MapHandler from "./MapHandler"
 import Player from "./Player"
 
@@ -21,6 +21,8 @@ class Game {
     mapHandler: MapHandler;
 
     player: Player|null = null;
+
+    ticker: Ticker;
 
     init() {
         // Initialize the Pixi application.
@@ -58,7 +60,13 @@ class Game {
         this.handleResize();
 
         // Handle input
-        window.addEventListener("keydown", event => this.handleInput(event));
+        window.addEventListener("keydown", event => this.handleInput(event, "keydown"));
+        window.addEventListener("keyup", event => this.handleInput(event, "keyup"));
+
+        // Setup the ticket
+        this.ticker = new Ticker();
+        this.ticker.add((time) => this.tick(time));
+        this.ticker.start();
     }
 
     // Deal with resizing of the browser window
@@ -72,13 +80,18 @@ class Game {
     // Start a new map
     newMap() {
         this.mapHandler.generateNewMap({level: 1});
-        this.mapHandler.startActing();
     }
 
     // Input handler. Pass it to the player entity.
-    handleInput(event:KeyboardEvent) {
+    handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup") {
         if (this.player) {
-            this.player.handleInput(event);
+            this.player.handleInput(event, eventType);
+        }
+    }
+
+    tick(_deltaTime:number) {
+        if (this.mapHandler) {
+            this.mapHandler.tick(this.ticker.deltaMS);
         }
     }
 }
