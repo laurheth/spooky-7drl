@@ -13,7 +13,7 @@ export const critterTypes = {
         spriteName: "sprites/testCritter.png",
         hp: 100,
         actPeriod: 600,
-        movePeriod: 100,
+        movePeriod: 200,
         idleActions: ["randomStep", "pause"] as CritterAction[],
         activeActions: ["walkToTarget"] as CritterAction[],
         awareness: 0.5,

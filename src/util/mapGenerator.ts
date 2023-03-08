@@ -240,7 +240,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
 
     // Add some critters
     const critters:CritterData[] = [];
-    for (let i=0; i<20; i++) {
+    for (let i=0; i<10; i++) {
         critters.push({
             name: "testCritter",
             key: randomElement(entitySpots, true)

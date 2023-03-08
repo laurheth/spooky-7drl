@@ -27,6 +27,7 @@ class Critter extends Entity {
     persistence: number;
     awake: number = 0;
     target: {x:number, y:number} = null;
+    previousStep:number[] = [0, 0];
 
     constructor({critterType, ...rest}:CritterParams) {
         const critterDetails = critterTypes[critterType];
@@ -40,13 +41,13 @@ class Critter extends Entity {
         });
         this.idleActions = critterDetails.idleActions ? critterDetails.idleActions : ["randomStep"];
         this.activeActions = critterDetails.activeActions ? critterDetails.activeActions : ["walkToTarget"];
-        this.awareness = critterDetails.awareness;
-        this.persistence = critterDetails.persistence;
+        this.awareness = critterDetails.awareness ? critterDetails.awareness : 0.5;
+        this.persistence = critterDetails.persistence ? critterDetails.persistence : 10;
     }
 
     act() {
         if (this.awake > 0) {
-            this.observe(this.awareness * 5);
+            this.observe(this.awareness * this.awake);
         } else {
             this.observe(this.awareness);
         }
@@ -66,15 +67,19 @@ class Critter extends Entity {
     }
 
     // Can we detect the player?
-    observe(awareAmount:number) {
+    observe(awareAmount:number, manualTarget:{x:number, y:number} = null) {
         const currentAwakeState = this.awake;
         if (Math.random() < awareAmount * this.currentTile.light) {
             this.awake = this.persistence;
-            const player = Game.getInstance().player;
-            if (this.currentTile.visible && player) {
-                this.target = {
-                    x: player.x,
-                    y: player.y
+            if (manualTarget) {
+                this.target = {...manualTarget};
+            } else {
+                const player = Game.getInstance().player;
+                if (this.currentTile.visible && player) {
+                    this.target = {
+                        x: player.x,
+                        y: player.y
+                    }
                 }
             }
         } else {
@@ -83,8 +88,17 @@ class Critter extends Entity {
         if (currentAwakeState < 0 && this.awake > 0) {
             // Force a task switch
             this.stepsUntilTaskSwitch = -1;
-            Logger.getInstance().sendMessage("You hear a shout!");
+            if (this.currentTile && this.currentTile.visible) {
+                Logger.getInstance().sendMessage("You hear a shout!", {important:true});
+            }
         }
+    }
+
+    step(dx: number, dy: number, dz: number): boolean {
+        if (dx || dy || dz) {
+            this.previousStep = [dx, dy, dz];
+        }
+        return super.step(dx, dy, dz);
     }
 
     pause() {
@@ -97,10 +111,14 @@ class Critter extends Entity {
     }
 
     walkToTarget(target:{x:number, y:number}) {
+        if (target && target.x === this.x && target.y === this.y) {
+            this.target = null;
+        }
+        // We have a target. Go there!
         if (target) {
             const {x, y} = target;
-            const [distX, distY] = [x - this.x, y - this.y];
-            if (this.stepsUntilTaskSwitch < 0) {
+            let [distX, distY] = [x - this.x, y - this.y];
+            if (this.awake > 0) {
                 this.stepsUntilTaskSwitch = Math.abs(distX) + Math.abs(distY);
             }
             if (Math.abs(distX) > Math.abs(distY)) {
@@ -117,7 +135,10 @@ class Critter extends Entity {
                 }
             }
         } else {
-            this.randomStep();
+            // Lost them. Try our previous step, maybe that'll get us somewhere
+            if (!this.step(this.previousStep[0], this.previousStep[1], this.previousStep[2])) {
+                this.randomStep();
+            }
         }
     }
 
