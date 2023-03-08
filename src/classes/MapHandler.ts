@@ -115,6 +115,18 @@ class MapHandler {
             itemFactory({x:tx, y:ty, z:1}, item.name, this);
         });
 
+        // Add critters
+        generatedMap.critters.forEach(critter => {
+            const [tx, ty] = critter.key.split(',').map(x => parseInt(x));
+            new Critter({
+                critterType: critter.name,
+                x: tx,
+                y: ty,
+                z: 1,
+                mapHandler: this
+            })
+        });
+
         this.spriteContainer.sortChildren();
     }
 

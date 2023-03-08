@@ -6,10 +6,18 @@ import MapHandler from "../classes/MapHandler"
 /**
  * Data object full of critter types
  */
+export type CritterAction = "randomStep" | "walkToTarget" | "pathToTarget" | "patrol" | "pause";
+
 export const critterTypes = {
     testCritter: {
-        sprite: Sprite.from("sprites/testCritter.png"),
-        hp: 100
+        spriteName: "sprites/testCritter.png",
+        hp: 100,
+        actPeriod: 600,
+        movePeriod: 100,
+        idleActions: ["randomStep", "pause"] as CritterAction[],
+        activeActions: ["walkToTarget"] as CritterAction[],
+        awareness: 0.5,
+        persistence: 10,
     }
 };
 

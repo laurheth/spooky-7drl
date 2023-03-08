@@ -1,5 +1,6 @@
 import { randomElement } from "./randomness"
 import Pathfinder from "../classes/Pathfinder"
+import { critterTypes } from "./entityTypes";
 
 interface MapGenParams {
     minRoomSize?: number;
@@ -23,6 +24,11 @@ interface RoomData {
 
 interface DecorationData {
     name: "bloodPool";
+    key: string;
+}
+
+interface CritterData {
+    name: keyof typeof critterTypes;
     key: string;
 }
 
@@ -232,12 +238,22 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         })
     }
 
+    // Add some critters
+    const critters:CritterData[] = [];
+    for (let i=0; i<20; i++) {
+        critters.push({
+            name: "testCritter",
+            key: randomElement(entitySpots, true)
+        })
+    }
+
     return {
         map: map,
         roomCenters: roomCenters,
         playerStart: randomElement(entitySpots),
         decorations: decorations,
-        items: items
+        items: items,
+        critters: critters
     }
 }
 
