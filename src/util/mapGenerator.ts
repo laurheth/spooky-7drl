@@ -114,7 +114,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     }, ([x, y]) => {
         const options = [[-1,0],[1,0],[0,1],[0,-1]];
         return options.filter(option => {
-            const optionKey = `${x+option[0]},${y+option[1]}`;
+            const optionKey:string = `${x+option[0]},${y+option[1]}`;
             return !map.has(optionKey) || map.get(optionKey).roomId < 0 || currentPathingIds.includes(map.get(optionKey).roomId);
         }).map(option => [option[0] + x, option[1] + y]);
     });
@@ -246,6 +246,10 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
             key: randomElement(entitySpots, true)
         })
     }
+    critters.push({
+        name: "bigBad",
+        key: randomElement(entitySpots, true)
+    })
 
     return {
         map: map,

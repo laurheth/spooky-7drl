@@ -6,6 +6,7 @@ import Entity from "./Entity"
 import Game from "./Game"
 import mapGenerator from "../util/mapGenerator"
 import VisionHandler from "./VisionHandler"
+import Pathfinder from "./Pathfinder"
 import { objectFactory, itemFactory } from "../util/entityTypes"
 
 interface MapHandlerParams {
@@ -30,12 +31,25 @@ class MapHandler {
     actors: Entity[] = [];
     active: boolean = false;
     visionHandler: VisionHandler;
+    pathfinder: Pathfinder;
+    roomCenters: number[][];
 
     constructor({tileContainer, spriteContainer, tileScale}:MapHandlerParams) {
         this.tileContainer = tileContainer;
         this.spriteContainer = spriteContainer;
         this.tileScale = tileScale;
         this.tileMap = new Map<string, Tile>();
+        // Setup pathfinding
+        this.pathfinder = new Pathfinder(([dx, dy])=>{
+            return Math.abs(dx) + Math.abs(dy)
+        }, ([x, y]) => {
+            const options = [[-1,0],[1,0],[0,1],[0,-1]];
+            return options.filter(option => {
+                const optionKey = `${x+option[0]},${y+option[1]},1`;
+                return this.tileMap.has(optionKey) && this.tileMap.get(optionKey).passable;
+            }).map(option => [option[0] + x, option[1] + y]);
+        });
+        // Setup vision
         this.visionHandler = new VisionHandler({
             range: 8,
             getTileFunction: (position) => this.getTile(position[0], position[1], position[2])
@@ -128,6 +142,7 @@ class MapHandler {
             })
         });
 
+        this.roomCenters = generatedMap.roomCenters.map(x=>x.center);
         this.spriteContainer.sortChildren();
     }
 
@@ -203,6 +218,14 @@ class MapHandler {
 
     tick(deltaMS:number) {
         this.actors.forEach(actor => actor.tick(deltaMS));
+    }
+
+    // Get a path from one point to another
+    getPath(start:number[], end:number[]) {
+        if (this.tileMap) {
+            return this.pathfinder.findPath(start, end);
+        }
+        return [];
     }
 }
 

@@ -96,7 +96,7 @@ class Pathfinder {
 
             // Upper limit of steps to avoid problems.
             limit++;
-            if (limit > 500) {
+            if (limit > 5000) {
                 break;
             }
         }

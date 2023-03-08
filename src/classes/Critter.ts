@@ -29,6 +29,7 @@ class Critter extends Entity {
     target: {x:number, y:number} = null;
     previousStep:number[] = [0, 0];
     team:number = 1;
+    path:number[][] = [];
     constructor({critterType, ...rest}:CritterParams) {
         const critterDetails = critterTypes[critterType];
         super({
@@ -117,8 +118,8 @@ class Critter extends Entity {
         this.step(dx, dy, 0);
     }
 
-    walkToTarget(target:{x:number, y:number}) {
-        if (target && target.x === this.x && target.y === this.y) {
+    walkToTarget(target:{x:number, y:number}, updateMainTarget:boolean = true) {
+        if (updateMainTarget && target && target.x === this.x && target.y === this.y) {
             this.target = null;
         }
         // We have a target. Go there!
@@ -149,12 +150,53 @@ class Critter extends Entity {
         }
     }
 
-    pathToTarget() {
-        // TODO
+    // Use pathfinding to get to the target
+    pathToTarget(target:{x:number, y:number}) {
+        // Check if we need to update the path
+        if (this.path.length > 0) {
+            if (target.x !== this.path[0][0] && target.y !== this.path[0][1]) {
+                this.path = [];
+            }
+        }
+        // Update the path!
+        if (this.path.length <= 0) {
+            if (!target || Math.abs(this.x - target.x) + Math.abs(this.y - target.y) <= 0) {
+                this.stepsUntilTaskSwitch = -1;
+                this.target = null;
+            } else {
+                this.path = this.mapHandler.getPath([this.x, this.y], [target.x, target.y]);
+                this.path.pop(); // Pop off the end, because we don't need the starting point
+                this.stepsUntilTaskSwitch = this.path.length;
+                if (this.path.length < 0) {
+                    this.target = null;
+                }
+            }
+        }
+        // No path?? Oh no.
+        if (this.path.length <= 0) {
+            this.pause();
+        } else {
+            // Step to the next step in the path
+            const nextTarget = this.path[this.path.length-1];
+            this.moveTo(nextTarget[0], nextTarget[1], 1);
+            // Check if we got there successfully. If so, remove the step from the path.
+            if (nextTarget[0] === this.x && nextTarget[1] === this.y) {
+                this.path.pop();
+            }
+        }
     }
 
+    // Patrol the map
     patrol() {
-        // TODO
+        if (this.mapHandler.roomCenters && !this.target) {
+            // Choose a random room and path there.
+            const target = randomElement(this.mapHandler.roomCenters);
+            this.target = {
+                x: target[0],
+                y: target[1],
+            }
+        }
+        this.pathToTarget(this.target);
     }
 }
 
