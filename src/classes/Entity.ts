@@ -17,6 +17,7 @@ export interface EntityParams {
     blocksVision?: boolean;
     actionTypes?: ActionTypes[];
     actPeriod?:number;
+    movePeriod?:number;
 }
 
 /**
@@ -40,7 +41,7 @@ class Entity {
     clock: number = 0;
     actPeriod: number;
     actionQueue: (()=>boolean)[] = [];
-    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], actPeriod=1000}:EntityParams) {
+    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], actPeriod=1000, movePeriod}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
         if (acts) {
@@ -55,7 +56,11 @@ class Entity {
         this.blocksVision = blocksVision;
         this.actionTypes = actionTypes;
         this.actPeriod = actPeriod;
-        this.spriteSpeed = 1 / (this.actPeriod);
+        if (movePeriod) {
+            this.spriteSpeed = 1 / (movePeriod);
+        } else {
+            this.spriteSpeed = 1 / (this.actPeriod);
+        }
     }
 
     // Move to a location

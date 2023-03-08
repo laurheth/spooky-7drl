@@ -39,7 +39,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 sprite: Sprite.from("sprites/testSword.png"),
                 mapHandler: mapHandler,
                 ...position,
-                name: "sword"
+                name: "sword",
+                equippable: true,
             })
     }
 }

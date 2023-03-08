@@ -9,6 +9,7 @@ export interface ItemParams {
     x: number;
     y: number;
     z: number;
+    equippable: boolean;
 }
 
 /**
@@ -22,13 +23,15 @@ class Item {
     z: number;
     name: string;
     currentTile: Tile;
-    constructor({sprite, mapHandler, x, y, z, name}:ItemParams) {
+    equippable: boolean;
+    constructor({sprite, mapHandler, x, y, z, name, equippable}:ItemParams) {
         this.mapHandler = mapHandler;
         this.sprite = sprite;
         this.sprite.zIndex = -1;
         this.mapHandler.spriteContainer.addChild(this.sprite);
         this.sprite.visible = false;
         this.name = name;
+        this.equippable = equippable;
         this.findValidSpotAndPlaceSelf(x, y, z);
     }
 

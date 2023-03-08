@@ -1,5 +1,6 @@
 import Game from "./Game"
 import Item from "./Item"
+import Player from "./Player"
 
 /**
  * Singleton to handle player UI
@@ -8,7 +9,7 @@ export default class UI {
     private static instance: UI;
 
     status: HTMLParagraphElement;
-    holding: HTMLUListElement;
+    holding: HTMLParagraphElement;
     openInventoryButton: HTMLButtonElement;
     closeInventoryButton: HTMLButtonElement;
     inventoryList: HTMLUListElement;
@@ -16,7 +17,7 @@ export default class UI {
 
     private constructor() {
         this.status = document.getElementById("status") as HTMLParagraphElement;
-        this.holding = document.getElementById("holding") as HTMLUListElement;
+        this.holding = document.getElementById("holding") as HTMLParagraphElement;
         this.openInventoryButton = document.getElementById("openInventory") as HTMLButtonElement;
         this.closeInventoryButton = document.getElementById("closeInventory") as HTMLButtonElement;
         this.inventoryList = document.getElementById("inventoryList") as HTMLUListElement;
@@ -52,7 +53,14 @@ export default class UI {
         this.inventory.classList.add("hide");
     }
 
-    updateInventory(inventory:Item[]) {
+    updateInventory(player:Player) {
+        const inventory:Item[] = player.inventory;
+        const equipped:Item = player.equippedItem
+        if (equipped) {
+            this.holding.innerText = equipped.name;
+        } else {
+            this.holding.innerText = "Nothing";
+        }
         while (this.inventoryList.lastChild) {
             this.inventoryList.removeChild(this.inventoryList.lastChild);
         }
@@ -66,15 +74,22 @@ export default class UI {
                 const listItem = document.createElement("li");
                 const nameElement = document.createElement("p");
                 nameElement.textContent = item.name;
-                const useButton = document.createElement("button"); // TODO
-                useButton.textContent = "Use";
+
+                const useButton = document.createElement("button");
+                
+                if (item === equipped) {
+                    useButton.textContent = "Unequip";
+                    useButton.onclick = () => player.unequip();
+                } else if (item.equippable) {
+                    useButton.textContent = "Equip";
+                    useButton.onclick = () => player.equipItemByIndex(index);
+                } else {
+                    useButton.textContent = "Use";
+                    useButton.onclick = () => player.useItemByIndex(index);
+                }
                 const dropButton = document.createElement("button");
                 dropButton.textContent = "Drop";
-                dropButton.onclick = () => {
-                    if (Game.getInstance().player) {
-                        Game.getInstance().player.dropItemByIndex(index);
-                    }
-                }
+                dropButton.onclick = () => player.dropItemByIndex(index);
     
                 listItem.appendChild(nameElement);
                 listItem.appendChild(useButton);

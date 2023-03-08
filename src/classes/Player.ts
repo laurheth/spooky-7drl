@@ -24,6 +24,8 @@ class Player extends Entity {
 
     inventory:Item[] = [];
 
+    equippedItem:Item = null;
+
     maxItems:number = 6;
 
     constructor(params: PlayerParams) {
@@ -31,7 +33,7 @@ class Player extends Entity {
         params.actPeriod = 200;
         super(params);
         Game.getInstance().player = this;
-        UI.getInstance().updateInventory(this.inventory);
+        UI.getInstance().updateInventory(this);
     }
 
     handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup"|"buffer"|"repeat") {
@@ -74,7 +76,7 @@ class Player extends Entity {
                                 Logger.getInstance().sendMessage(`You pick up the ${tile.item.name}.`);
                                 this.inventory.push(tile.item);
                                 tile.item.pickUp();
-                                UI.getInstance().updateInventory(this.inventory);
+                                UI.getInstance().updateInventory(this);
                                 turnDone = true;
                             } else {
                                 Logger.getInstance().sendMessage("Your inventory is full! Use or drop something first.");
@@ -96,6 +98,34 @@ class Player extends Entity {
         }
     }
 
+    equipItemByIndex(index:number) {
+        if (index < this.inventory.length) {
+            const item = this.inventory[index];
+            if (item) {
+                this.equippedItem = item;
+                UI.getInstance().updateInventory(this);
+                Logger.getInstance().sendMessage(`You equip the ${item.name}.`);
+            }
+        }  
+    }
+
+    useItemByIndex(index:number) {
+        if (index < this.inventory.length) {
+            const item = this.inventory[index];
+            if (item) {
+                // TODO
+            }
+        }
+    }
+
+    unequip() {
+        if (this.equippedItem) {
+            Logger.getInstance().sendMessage(`You unequip the ${this.equippedItem.name}.`);
+        }
+        this.equippedItem = null;
+        UI.getInstance().updateInventory(this);
+    }
+
     dropItemByIndex(index:number) {
         if (index < this.inventory.length) {
             const item = this.inventory[index];
@@ -103,7 +133,10 @@ class Player extends Entity {
                 if(item.drop(this.x, this.y, this.z)) {
                     Logger.getInstance().sendMessage(`You drop the ${item.name}.`);
                     this.inventory.splice(index, 1);
-                    UI.getInstance().updateInventory(this.inventory);
+                    if (this.equippedItem === item) {
+                        this.equippedItem = null;
+                    }
+                    UI.getInstance().updateInventory(this);
                 } else {
                     Logger.getInstance().sendMessage(`The floor is too cluttered to drop the ${item.name}!`);
                 }
