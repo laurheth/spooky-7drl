@@ -10,6 +10,10 @@ export interface ItemParams {
     y: number;
     z: number;
     equippable: boolean;
+    strength: number;
+    attackString: string;
+    durability: number;
+    durabilityRate: number;
 }
 
 /**
@@ -24,7 +28,11 @@ class Item {
     name: string;
     currentTile: Tile;
     equippable: boolean;
-    constructor({sprite, mapHandler, x, y, z, name, equippable}:ItemParams) {
+    strength: number;
+    attackString: string;
+    durability: number;
+    durabilityRate: number;
+    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate}:ItemParams) {
         this.mapHandler = mapHandler;
         this.sprite = sprite;
         this.sprite.zIndex = -1;
@@ -32,6 +40,10 @@ class Item {
         this.sprite.visible = false;
         this.name = name;
         this.equippable = equippable;
+        this.attackString = attackString;
+        this.strength = strength;
+        this.durability = durability;
+        this.durabilityRate = durabilityRate;
         this.findValidSpotAndPlaceSelf(x, y, z);
     }
 
@@ -79,6 +91,15 @@ class Item {
         const success = this.findValidSpotAndPlaceSelf(x, y, z);
         this.mapHandler.spriteContainer.sortChildren();
         return success;
+    }
+
+    // Roll the dice to damage this item. Return true if durability changes.
+    damage():boolean {
+        if (this.durabilityRate < Math.random()) {
+            this.durability--;
+            return true;
+        }
+        return false;
     }
 }
 

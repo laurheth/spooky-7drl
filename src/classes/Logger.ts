@@ -21,6 +21,7 @@ export default class Logger {
 
     sendMessage(message:string, {important = false, tone = "neutral"}:MessageOptions = {}) {
         const newMessage = document.createElement("li");
+        message = message[0].toUpperCase() + message.slice(1);
         newMessage.textContent = message;
         newMessage.classList.add(tone);
         if (important) {

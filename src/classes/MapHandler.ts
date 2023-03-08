@@ -95,6 +95,7 @@ class MapHandler {
 
         // Add in the player
         const player = new Player({
+            name: "you",
             sprite: Sprite.from("sprites/testFace.png"),
             x: px,
             y: py,

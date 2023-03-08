@@ -89,6 +89,7 @@ button:hover, .inventory button:focus {
     border: 2px solid orangered;
     border-radius: 10px;
     min-width: 100px;
+    text-transform: capitalize;
 }
 
 .playerInfo h2 {

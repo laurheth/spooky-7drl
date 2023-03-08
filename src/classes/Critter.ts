@@ -28,7 +28,7 @@ class Critter extends Entity {
     awake: number = 0;
     target: {x:number, y:number} = null;
     previousStep:number[] = [0, 0];
-
+    team:number = 1;
     constructor({critterType, ...rest}:CritterParams) {
         const critterDetails = critterTypes[critterType];
         super({
@@ -37,15 +37,22 @@ class Critter extends Entity {
             actPeriod: critterDetails.actPeriod,
             movePeriod: critterDetails.movePeriod,
             acts: true,
-            ...rest
+            ...rest,
+            name: critterDetails.name
         });
         this.idleActions = critterDetails.idleActions ? critterDetails.idleActions : ["randomStep"];
         this.activeActions = critterDetails.activeActions ? critterDetails.activeActions : ["walkToTarget"];
         this.awareness = critterDetails.awareness ? critterDetails.awareness : 0.5;
         this.persistence = critterDetails.persistence ? critterDetails.persistence : 10;
+        this.actionTypes = critterDetails.actionTypes ? critterDetails.actionTypes : ["violence"];
+        this.entityFlags = critterDetails.entityFlags ? critterDetails.entityFlags : [];
+        this.strength = critterDetails.strength ? critterDetails.strength : 1;
     }
 
     act() {
+        if (!this.active) {
+            return;
+        }
         if (this.awake > 0) {
             this.observe(this.awareness * this.awake);
         } else {

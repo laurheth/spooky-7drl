@@ -2,6 +2,9 @@ import Game from "./Game"
 import Item from "./Item"
 import Player from "./Player"
 
+const fine = 0.66;
+const caution = 0.33
+
 /**
  * Singleton to handle player UI
  */
@@ -53,12 +56,49 @@ export default class UI {
         this.inventory.classList.add("hide");
     }
 
+    updateStatus(player:Player) {
+        const healthFraction = player.getHealthFraction();
+        if (healthFraction > fine) {
+            this.status.textContent = "Fine";
+            this.status.classList.remove("bad", "neutral");
+            this.status.classList.add("good");
+        } else if (healthFraction > caution) {
+            this.status.textContent = "Caution";
+            this.status.classList.remove("bad", "good");
+            this.status.classList.add("neutral");
+        } else if (healthFraction > 0) {
+            this.status.textContent = "Danger";
+            this.status.classList.remove("good", "neutral");
+            this.status.classList.add("bad");
+        } else {
+            this.status.textContent = "Dead";
+            this.status.classList.remove("good", "neutral");
+            this.status.classList.add("bad");
+        }
+    }
+
     updateInventory(player:Player) {
         const inventory:Item[] = player.inventory;
         const equipped:Item = player.equippedItem
         if (equipped) {
-            this.holding.innerText = equipped.name;
+            let conditionMessage:string;
+            if (equipped.durability >= 8) {
+                conditionMessage = "Good condition";
+                this.holding.className = "good";
+            }
+            else if (equipped.durability >= 6) {
+                conditionMessage = "Scratched";
+                this.holding.className = "good";
+            } else if (equipped.durability > 3) {
+                conditionMessage = "Rough shape";
+                this.holding.className = "neutral";
+            } else {
+                conditionMessage = "Almost broken";
+                this.holding.className = "bad";
+            }
+            this.holding.innerText = `${equipped.name} - ${conditionMessage}`;
         } else {
+            this.holding.className = null;
             this.holding.innerText = "Nothing";
         }
         while (this.inventoryList.lastChild) {

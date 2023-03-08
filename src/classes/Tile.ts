@@ -69,7 +69,11 @@ class Tile {
         return this._seeThrough && (!this.entity || !this.entity.blocksVision);
     }
 
-    addDecoration(decoration:Sprite) {
+    addDecoration(decoration:Sprite, override:boolean = false) {
+        if (override && this.decoration) {
+            this.decoration.destroy();
+            this.decoration = null;
+        }
         if (!this.decoration) {
             this.decoration = decoration
             this.sprite.addChild(decoration);

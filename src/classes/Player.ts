@@ -28,9 +28,15 @@ class Player extends Entity {
 
     maxItems:number = 6;
 
+    team:number = 2;
+
     constructor(params: PlayerParams) {
         params.acts = true;
         params.actPeriod = 200;
+        params.hp = 100;
+        params.actionTypes = ["violence"];
+        params.entityFlags = ["important"];
+        params.strength = 5;
         super(params);
         Game.getInstance().player = this;
         UI.getInstance().updateInventory(this);
@@ -176,6 +182,43 @@ class Player extends Entity {
             this.inputBuffer = null;
         } else if (this.previousInput) {
             this.handleInput(this.previousInput, "repeat");
+        }
+    }
+
+    damage(damage: number, attacker?: Entity): void {
+        super.damage(damage, attacker);
+        UI.getInstance().updateStatus(this);
+    }
+
+    damageAmount(): number {
+        if (!this.equippedItem) {
+            return this.strength;
+        } else {
+            return this.equippedItem.strength;
+        }
+    }
+
+    // The damage logic needs a refactor, yeesh, but no time to go back right now.
+    damageHeldItem() {
+        if (this.equippedItem) {
+            if (this.equippedItem.damage()) {
+                if (this.equippedItem.durability <= 0) {
+                    Logger.getInstance().sendMessage(`Your ${this.equippedItem.name} has broken!`, {tone:"bad"});
+                    const index = this.inventory.indexOf(this.equippedItem);
+                    this.inventory.splice(index, 1);
+                    this.equippedItem = null;
+                }
+                UI.getInstance().updateInventory(this);
+            }
+        }
+    }
+
+    // Get violence message
+    violenceMessage(target:Entity) {
+        if (this.equippedItem) {
+            return `You ${this.equippedItem.attackString} ${target.name}`;
+        } else {
+            return `You punch ${target.name}!`
         }
     }
 }

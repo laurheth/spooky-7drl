@@ -4,7 +4,8 @@ import Tile from "./Tile"
 import Logger from "./Logger"
 import Player from "./Player"
 
-type ActionTypes = "open";
+export type ActionTypes = "open" | "violence" | "push" | "swap";
+export type EntityFlags = "important" | "big";
 
 export interface EntityParams {
     sprite: Sprite;
@@ -16,8 +17,11 @@ export interface EntityParams {
     acts?: boolean;
     blocksVision?: boolean;
     actionTypes?: ActionTypes[];
+    entityFlags?: EntityFlags[];
     actPeriod?:number;
     movePeriod?:number;
+    name: string;
+    strength?:number;
 }
 
 /**
@@ -36,12 +40,17 @@ class Entity {
     spriteMoving: boolean = false;
     blocksVision: boolean;
     hp: number;
+    maxHp: number;
     active: boolean = true;
     actionTypes: ActionTypes[];
+    entityFlags: EntityFlags[];
     clock: number = 0;
     actPeriod: number;
+    name: string;
+    team: number = 0;
+    strength: number;
     actionQueue: (()=>boolean)[] = [];
-    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], actPeriod=1000, movePeriod}:EntityParams) {
+    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], entityFlags=[], actPeriod=1000, movePeriod, name, strength=0}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
         if (acts) {
@@ -53,6 +62,7 @@ class Entity {
         // Move self to starting location
         this.moveTo(x, y, z, true);
         this.hp = hp;
+        this.maxHp = hp;
         this.blocksVision = blocksVision;
         this.actionTypes = actionTypes;
         this.actPeriod = actPeriod;
@@ -61,6 +71,12 @@ class Entity {
         } else {
             this.spriteSpeed = 1 / (this.actPeriod);
         }
+        this.name = name;
+        this.strength = strength;
+    }
+
+    getHealthFraction() {
+        return this.hp / this.maxHp;
     }
 
     // Move to a location
@@ -109,47 +125,76 @@ class Entity {
     // Get acted upon
     actUpon(actor:Entity) {
         this.actionTypes.forEach(actionType => {
-            switch(actionType) {
-                case "open":
-                    let rememberTile:Tile = null;
-                    if (this.currentTile) {
-                        rememberTile = this.currentTile;
-                        // Remove self from previous tile
-                        this.currentTile.entity = null;
-                        this.currentTile = null;
-                        this.mapHandler.updateVision();
-
-                        if (actor instanceof Player) {
-                            Logger.getInstance().sendMessage("You open the door.");
-                        } else if (rememberTile && rememberTile.visible) {
-                            Logger.getInstance().sendMessage("The door opens.");
-                        }
-                    }
-                    this.sprite.visible = false;
-
-                    if (rememberTile) {
-                        const closeAction = () => {
-                            if (!rememberTile.entity) {
-                                this.currentTile = rememberTile;
-                                this.currentTile.entity = this;
-                                this.mapHandler.updateVision();
-                                if (rememberTile.visible) {
-                                    Logger.getInstance().sendMessage("The door closes.");
-                                }
-                            } else {
-                                return false;
-                            }
-                        }
-                        this.actionQueue.push(closeAction);
-                        this.clock = 0;
-                    }
-                    break; 
-            }
+            this.performSpecificAction(actionType, actor);
         });
+    }
+
+    performSpecificAction(actionType:ActionTypes, actor:Entity) {
+        switch(actionType) {
+            // This is a door. Open it!
+            case "open":
+                let rememberTile:Tile = null;
+                if (this.currentTile) {
+                    rememberTile = this.currentTile;
+                    // Remove self from previous tile
+                    this.currentTile.entity = null;
+                    this.currentTile = null;
+                    this.mapHandler.updateVision();
+
+                    if (actor instanceof Player) {
+                        Logger.getInstance().sendMessage("You open the door.");
+                    } else if (rememberTile && rememberTile.visible) {
+                        Logger.getInstance().sendMessage("The door opens.");
+                    }
+                }
+                this.sprite.visible = false;
+
+                if (rememberTile) {
+                    const closeAction = () => {
+                        if (!rememberTile.entity) {
+                            this.currentTile = rememberTile;
+                            this.currentTile.entity = this;
+                            this.mapHandler.updateVision();
+                            if (rememberTile.visible) {
+                                Logger.getInstance().sendMessage("The door closes.");
+                            }
+                        } else {
+                            return false;
+                        }
+                    }
+                    this.actionQueue.push(closeAction);
+                    this.clock = 0;
+                }
+                break;
+            // Fight!!
+            case "violence":
+                // No friendly fire
+                if (this.team != actor.team && actor.damageAmount() > 0) {
+                    Logger.getInstance().sendMessage(actor.violenceMessage(this), {tone: (this instanceof Player) ? "bad" : "neutral"});
+                    this.damage(actor.damageAmount(), actor);
+                    if (actor instanceof Player) {
+                        actor.damageHeldItem();
+                    }
+                }
+                break;
+        }
+    }
+
+    // Get violence message
+    violenceMessage(target:Entity) {
+        return `${this.name} attacks ${target.name}!`
+    }
+
+    // Calculate damage amount
+    damageAmount():number {
+        return this.strength;
     }
 
     // Act!
     act() {
+        if (!this.active) {
+            return;
+        }
         const action = this.actionQueue.shift();
         if (action) {
             if (!action()) {
@@ -191,11 +236,13 @@ class Entity {
         }
     }
 
-    // Harm this entity
+    // Harm this entity (note, negative harm is healing)
     damage(damage:number, attacker:Entity = null) {
         this.hp -= damage;
         if (this.hp <= 0) {
             this.die();
+        } else if (this.hp > this.maxHp) {
+            this.hp = this.maxHp;
         }
     }
 
