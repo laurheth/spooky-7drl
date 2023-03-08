@@ -1,5 +1,6 @@
 import { default as Entity, EntityParams } from "./Entity"
 import Game from "./Game"
+import UI from "./UI"
 import Item from "./Item"
 import Logger from "./Logger"
 
@@ -30,6 +31,7 @@ class Player extends Entity {
         params.actPeriod = 200;
         super(params);
         Game.getInstance().player = this;
+        UI.getInstance().updateInventory(this.inventory);
     }
 
     handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup"|"buffer"|"repeat") {
@@ -72,6 +74,7 @@ class Player extends Entity {
                                 Logger.getInstance().sendMessage(`You pick up the ${tile.item.name}.`);
                                 this.inventory.push(tile.item);
                                 tile.item.pickUp();
+                                UI.getInstance().updateInventory(this.inventory);
                                 turnDone = true;
                             } else {
                                 Logger.getInstance().sendMessage("Your inventory is full! Use or drop something first.");
@@ -80,21 +83,6 @@ class Player extends Entity {
                             Logger.getInstance().sendMessage("There is nothing here to pick up.");
                         }
                         break;
-                    case "r": // ...recycle?
-                        if (eventType === "repeat") {
-                            // Don't repeat dropping.
-                            break;
-                        }
-                        const item = this.inventory.pop();
-                        if (item) {
-                            if(item.drop(this.x, this.y, this.z)) {
-                                Logger.getInstance().sendMessage(`You drop the ${item.name}.`);
-                            } else {
-                                Logger.getInstance().sendMessage(`The floor is too cluttered to drop the ${item.name}!`);
-                            }
-                        } else {
-                            Logger.getInstance().sendMessage("You aren't holding anything!");
-                        }
                 }
                 if (turnDone) {
                     this.clock = 0;
@@ -105,6 +93,21 @@ class Player extends Entity {
             }
         } else {
             this.previousInput = null;
+        }
+    }
+
+    dropItemByIndex(index:number) {
+        if (index < this.inventory.length) {
+            const item = this.inventory[index];
+            if (item) {
+                if(item.drop(this.x, this.y, this.z)) {
+                    Logger.getInstance().sendMessage(`You drop the ${item.name}.`);
+                    this.inventory.splice(index, 1);
+                    UI.getInstance().updateInventory(this.inventory);
+                } else {
+                    Logger.getInstance().sendMessage(`The floor is too cluttered to drop the ${item.name}!`);
+                }
+            }
         }
     }
 

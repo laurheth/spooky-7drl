@@ -1,6 +1,7 @@
 import { Application, SCALE_MODES, Container, BaseTexture, Ticker } from "pixi.js"
 import MapHandler from "./MapHandler"
 import Player from "./Player"
+import UI from "./UI"
 
 /**
  * This class encapsulates game setup, keeps track of the Pixi.js app, and some related functionality.
@@ -71,6 +72,7 @@ class Game {
 
     // Deal with resizing of the browser window
     handleResize() {
+        this.pixiApp.renderer.resolution = devicePixelRatio;
         this.pixiApp.view.width = this.appRoot.clientWidth;
         this.pixiApp.view.height = this.appRoot.clientHeight;
         this.pixiApp.renderer.resize(this.appRoot.clientWidth, this.appRoot.clientHeight);
@@ -84,8 +86,12 @@ class Game {
 
     // Input handler. Pass it to the player entity.
     handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup") {
-        if (this.player) {
-            this.player.handleInput(event, eventType);
+        if (eventType === "keydown" && event.key === "i") {
+            UI.getInstance().toggleInventory();
+        } else {
+            if (this.player) {
+                this.player.handleInput(event, eventType);
+            }
         }
     }
 
