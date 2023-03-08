@@ -8,6 +8,7 @@ import mapGenerator from "../util/mapGenerator"
 import VisionHandler from "./VisionHandler"
 import Pathfinder from "./Pathfinder"
 import { objectFactory, itemFactory } from "../util/entityTypes"
+import Logger from "./Logger"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -41,7 +42,7 @@ class MapHandler {
         this.tileMap = new Map<string, Tile>();
         // Setup pathfinding
         this.pathfinder = new Pathfinder(([dx, dy])=>{
-            return Math.abs(dx) + Math.abs(dy)
+            return dx**2 + dy**2;
         }, ([x, y]) => {
             const options = [[-1,0],[1,0],[0,1],[0,-1]];
             return options.filter(option => {
@@ -226,6 +227,35 @@ class MapHandler {
             return this.pathfinder.findPath(start, end);
         }
         return [];
+    }
+
+    // Project some sound
+    sound(position:{x:number, y:number}, {seen, unseen}:{seen?:string, unseen?:string}, volume:number, playerOrigin:boolean) {
+        // Give enemies a chance to hear it
+        if (playerOrigin) {
+            this.actors.forEach(actor => {
+                if (actor instanceof Critter) {
+                    const distance = Math.max(Math.abs(position.x - actor.x), Math.abs(position.y - actor.y));
+                    actor.observe(actor.awareness * 0.5, position, volume / distance);
+                }
+            });
+        }
+        const player = Game.getInstance().player;
+        if (player) {
+            const playerDistance = Math.max(Math.abs(player.x - position.x),Math.abs(player.y - position.y));
+            if (playerDistance < 3*volume && Math.random() < volume / playerDistance) {
+                const tile = this.getTile(position.x, position.y, 1);
+                if (tile && tile.visible) {
+                    if (seen) {
+                        Logger.getInstance().sendMessage(seen);
+                    }
+                } else {
+                    if (unseen) {
+                        Logger.getInstance().sendMessage(unseen);
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -73,6 +73,7 @@ class Entity {
         }
         this.name = name;
         this.strength = strength;
+        this.entityFlags = entityFlags;
     }
 
     getHealthFraction() {
@@ -127,6 +128,11 @@ class Entity {
         this.actionTypes.forEach(actionType => {
             this.performSpecificAction(actionType, actor);
         });
+        // Some bonus actions
+        if (actor.entityFlags.includes("important") && !this.entityFlags.includes("important") && actor.team === this.team) {
+            // Important critters can switch places with unimportant ones
+            this.performSpecificAction("swap", actor);
+        }
     }
 
     performSpecificAction(actionType:ActionTypes, actor:Entity) {
@@ -146,6 +152,12 @@ class Entity {
                     } else if (rememberTile && rememberTile.visible) {
                         Logger.getInstance().sendMessage("The door opens.");
                     }
+                    this.mapHandler.sound(
+                        {x:this.x, y:this.y},
+                        {unseen:"You hear a door open..."},
+                        2,
+                        actor instanceof Player
+                    );
                 }
                 this.sprite.visible = false;
 
@@ -174,8 +186,21 @@ class Entity {
                     this.damage(actor.damageAmount(), actor);
                     if (actor instanceof Player) {
                         actor.damageHeldItem();
+                        this.mapHandler.sound(
+                            {x:actor.x, y:actor.y},
+                            {},
+                            5 * Math.random(),
+                            true
+                        );
                     }
                 }
+                break;
+            case "swap":
+                // Trade places
+                this.currentTile.entity = null;
+                const [x,y,z] = [actor.x, actor.y, actor.z];
+                actor.moveTo(this.x, this.y, this.z);
+                this.moveTo(x, y, z);
                 break;
         }
     }

@@ -75,9 +75,9 @@ class Critter extends Entity {
     }
 
     // Can we detect the player?
-    observe(awareAmount:number, manualTarget:{x:number, y:number} = null) {
+    observe(awareAmount:number, manualTarget:{x:number, y:number} = null, manualLight=0) {
         const currentAwakeState = this.awake;
-        if (Math.random() < awareAmount * this.currentTile.light) {
+        if (Math.random() < awareAmount * (manualLight ? manualLight : this.currentTile.light)) {
             this.awake = this.persistence;
             if (manualTarget) {
                 this.target = {...manualTarget};
@@ -174,11 +174,15 @@ class Critter extends Entity {
         }
         // No path?? Oh no.
         if (this.path.length <= 0) {
-            this.pause();
+            if (this.previousStep) {
+                this.step(this.previousStep[0], this.previousStep[1], 0);
+            } else {
+                this.pause();
+            }
         } else {
             // Step to the next step in the path
             const nextTarget = this.path[this.path.length-1];
-            this.moveTo(nextTarget[0], nextTarget[1], 1);
+            this.step(nextTarget[0] - this.x, nextTarget[1] - this.y, 0);
             // Check if we got there successfully. If so, remove the step from the path.
             if (nextTarget[0] === this.x && nextTarget[1] === this.y) {
                 this.path.pop();
