@@ -6,7 +6,7 @@
 
 // Helper function to get dx & dy
 const getDelta = (position:number[], target:number[]) => position.map((x, i) => target[i] - x);
-const stepCost = ([dx, dy]:number[]) => (dx !== 0 && dy !== 0) ? 1.2 : 1;
+//const stepCost = ([dx, dy]:number[]) => (dx !== 0 && dy !== 0) ? 1.2 : 1;
 const hashPosition = (position:number[]) => position.join(",");
 
 class NodeValue {
@@ -43,10 +43,11 @@ class NodeValue {
 class Pathfinder {
     heuristic:(position:Array<number>)=>number;
     neighbourGetter:(position:Array<number>)=>Array<Array<number>>;
-
-    constructor(heuristic:(position:Array<number>)=>number, neighbourGetter:(position:Array<number>)=>Array<Array<number>>) {
+    stepCost:(position:Array<number>)=>number;
+    constructor(heuristic:(position:Array<number>)=>number, neighbourGetter:(position:Array<number>)=>Array<Array<number>>, stepCost:(position:Array<number>)=>number) {
         this.heuristic = heuristic;
         this.neighbourGetter = neighbourGetter;
+        this.stepCost = stepCost;
     }
 
     findPath(start:number[], end:number[]):number[][] {
@@ -78,7 +79,7 @@ class Pathfinder {
             const neighbours = this.neighbourGetter(node.position);
             neighbours.forEach(neighbour => {
                 // Define a node
-                const newNode = new NodeValue(neighbour, node, this.heuristic(getDelta(neighbour, end)), stepCost(getDelta(neighbour, node.position)));
+                const newNode = new NodeValue(neighbour, node, this.heuristic(getDelta(neighbour, end)), this.stepCost(neighbour));
                 const hash = hashPosition(neighbour);
                 // Have we already looked at this tile?
                 if (!checkedTiles[hash]) {

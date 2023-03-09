@@ -3,6 +3,7 @@ import Game from "./Game"
 import UI from "./UI"
 import Item from "./Item"
 import Logger from "./Logger"
+import { Sprite } from "pixi.js"
 
 interface PlayerParams extends EntityParams {
     // Anything extra?
@@ -85,6 +86,10 @@ class Player extends Entity {
                             if (this.inventory.length < this.maxItems) {
                                 Logger.getInstance().sendMessage(`You pick up the ${tile.item.name}.`);
                                 this.inventory.push(tile.item);
+                                if (!this.equippedItem && tile.item.equippable) {
+                                    Logger.getInstance().sendMessage(`You equip it immediately.`);
+                                    this.equippedItem = tile.item;
+                                }
                                 tile.item.pickUp();
                                 UI.getInstance().updateInventory(this);
                                 turnDone = true;
@@ -113,6 +118,17 @@ class Player extends Entity {
         } else {
             this.previousInput = null;
         }
+    }
+
+    step(dx: number, dy: number, dz: number, doActions?: boolean): boolean {
+        if (dx > 0) {
+            this.sprite.scale.x = 1;
+            this.sprite.pivot.x = 0;
+        } else if (dx < 0) {
+            this.sprite.scale.x = -1;
+            this.sprite.pivot.x = 32;
+        }
+        return super.step(dx, dy, dz, doActions);
     }
 
     equipItemByIndex(index:number) {
@@ -164,8 +180,17 @@ class Player extends Entity {
         }
     }
 
-    moveTo(x:number, y:number, z:number, immediate = false): boolean {
-        const success = super.moveTo(x, y, z, immediate);
+    bleed() {
+        if (Math.random() > 0.3 && this.currentTile && !this.currentTile.decoration) {
+            this.currentTile.addDecoration(Sprite.from("decoration/bloodPool.png"));
+        }
+    }
+
+    moveTo(x:number, y:number, z:number, immediate = false, doActions = true): boolean {
+        if (this.hp < 25 && Math.random() > this.hp / 25) {
+            this.bleed();
+        }
+        const success = super.moveTo(x, y, z, immediate, doActions);
         if (success && this.currentTile) {
             if (this.currentTile.item) {
                 Logger.getInstance().sendMessage(`You see at your feet at ${this.currentTile.item.name}.`);
@@ -187,8 +212,8 @@ class Player extends Entity {
     tick(deltaMS: number): void {
         super.tick(deltaMS);
         this.totalTime += deltaMS;
-        if (this.hp < 20) {
-            const base = 1 - Math.max(0, this.hp / 20);
+        if (this.hp < 33) {
+            const base = 1 - Math.max(0, this.hp / 33);
             this.damageTintAmount = Math.max(this.damageTintAmount, base * Math.sin(this.heartbeatFactor * this.totalTime));
         }
         if (this.updateVisionDelay >= 0) {
@@ -212,6 +237,9 @@ class Player extends Entity {
     damage(damage: number, attacker?: Entity): void {
         super.damage(damage, attacker);
         UI.getInstance().updateStatus(this);
+        if (damage > 0) {
+            this.bleed();
+        }
     }
 
     damageAmount(): number {
@@ -240,10 +268,14 @@ class Player extends Entity {
     // Get violence message
     violenceMessage(target:Entity) {
         if (this.equippedItem) {
-            return `You ${this.equippedItem.attackString} ${target.name}`;
+            return `You ${this.equippedItem.attackString} ${target.name}!`;
         } else {
             return `You punch ${target.name}!`
         }
+    }
+
+    deathMessage(): void {
+        Logger.getInstance().sendMessage(`You die...`, {tone:"bad", important: true});
     }
 }
 

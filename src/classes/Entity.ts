@@ -70,6 +70,7 @@ class Entity {
         this.mapHandler.spriteContainer.addChild(this.sprite);
         this.sprite.visible = false;
         // Move self to starting location
+        this.entityFlags = entityFlags;
         this.moveTo(x, y, z, true);
         this.hp = hp;
         this.maxHp = hp;
@@ -86,7 +87,6 @@ class Entity {
         }
         this.name = name;
         this.strength = strength;
-        this.entityFlags = entityFlags;
         this.needsKey = needsKey;
         this.removeOnDeath = removeOnDeath;
     }
@@ -96,20 +96,25 @@ class Entity {
     }
 
     // Move to a location
-    moveTo(x:number, y:number, z:number, immediate = false): boolean {
+    moveTo(x:number, y:number, z:number, immediate = false, doActions = true): boolean {
         // Make sure it's possible to go there
         const tile = this.mapHandler.getTile(x,y,z);
         if (tile && tile.passable) {
             if (tile.entity) {
-                // Something lives there. Act upon it. The recipient will figure out what to do.
-                tile.entity.actUpon(this);
-                return true;
+                if (doActions) {
+                    // Something lives there. Act upon it. The recipient will figure out what to do.
+                    tile.entity.actUpon(this);
+                    return true;
+                } else {
+                    // We aren't doing any actions, so this move fails
+                    return false;
+                }
             } else {
                 // We can move! Go there now.
                 this.x = x;
                 this.y = y;
                 this.z = z;
-                if (this.currentTile) {
+                if (this.currentTile && this.currentTile.entity === this) {
                     // Remove self from previous tile
                     this.currentTile.entity = null;
                 }
@@ -134,8 +139,8 @@ class Entity {
     }
 
     // Helper method to make stepping easier
-    step(dx:number, dy:number, dz:number): boolean {
-        return this.moveTo(this.x + dx, this.y + dy, this.z + dz);
+    step(dx:number, dy:number, dz:number, doActions:boolean = true): boolean {
+        return this.moveTo(this.x + dx, this.y + dy, this.z + dz, false, doActions);
     }
 
     // Get acted upon
@@ -202,6 +207,7 @@ class Entity {
                             if (rememberTile.visible) {
                                 Logger.getInstance().sendMessage("The door closes.");
                             }
+                            return true;
                         } else {
                             return false;
                         }
@@ -215,21 +221,38 @@ class Entity {
                 // No friendly fire
                 if (this.team != actor.team && actor.damageAmount() > 0) {
                     Logger.getInstance().sendMessage(actor.violenceMessage(this), {tone: (this instanceof Player) ? "bad" : "neutral"});
-                    this.damage(actor.damageAmount(), actor);
+                    const dmg = actor.damageAmount();
+                    this.damage(dmg, actor);
                     if (actor instanceof Player) {
                         actor.damageHeldItem();
                         this.mapHandler.sound(
                             {x:actor.x, y:actor.y},
                             {},
-                            5 * Math.random(),
+                            Math.max(5, dmg) * Math.random(),
                             true
                         );
                     }
                 }
                 break;
+            case "push":
+                // What direction are we getting pushed
+                const direction = [this.x - actor.x, this.y - actor.y];
+                let [dx, dy] = [0,0];
+                if (Math.abs(direction[0]) > Math.abs(direction[1])) {
+                    dx = Math.sign(direction[0]);
+                } else {
+                    dy = Math.sign(direction[1]);
+                }
+                // Take a steppy
+                if (this.step(dx, dy, 0, false)) {
+                    // We did it!
+                    break;
+                }
+                // We didn't do it! Fall through the switch case and, instead, do a swap.
             case "swap":
                 // Trade places
                 this.currentTile.entity = null;
+                actor.currentTile.entity = null;
                 const [x,y,z] = [actor.x, actor.y, actor.z];
                 actor.moveTo(this.x, this.y, this.z);
                 this.moveTo(x, y, z);
@@ -338,12 +361,12 @@ class Entity {
                 return true;
             });
         } else {
-            if (this instanceof Player) {
-                Logger.getInstance().sendMessage(`You die...`, {tone:"bad", important: true});
-            } else {
-                Logger.getInstance().sendMessage(`The ${this.name} dies!`, {tone:"good"});
-            }
+            this.deathMessage();
         }
+    }
+
+    deathMessage() {
+        Logger.getInstance().sendMessage(`The ${this.name} is destroyed!`, {tone:"good"});
     }
 
     updateTint() {

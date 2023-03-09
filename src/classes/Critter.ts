@@ -103,6 +103,9 @@ class Critter extends Entity {
     // Can we detect the player?
     observe(awareAmount:number, manualTarget:{x:number, y:number} = null, manualLight=0) {
         const currentAwakeState = this.awake;
+        if (!manualLight && !this.currentTile) {
+            return;
+        }
         if (Math.random() < awareAmount * (manualLight ? manualLight : this.currentTile.light)) {
             this.awake = this.persistence;
             if (manualTarget) {
@@ -131,6 +134,13 @@ class Critter extends Entity {
     step(dx: number, dy: number, dz: number): boolean {
         if (dx || dy || dz) {
             this.previousStep = [dx, dy, dz];
+        }
+        if (dx > 0) {
+            this.sprite.scale.x = 1;
+            this.sprite.pivot.x = 0;
+        } else if (dx < 0) {
+            this.sprite.scale.x = -1;
+            this.sprite.pivot.x = 32;
         }
         return super.step(dx, dy, dz);
     }
@@ -221,12 +231,18 @@ class Critter extends Entity {
         if (this.mapHandler.roomCenters && !this.target) {
             // Choose a random room and path there.
             const target = randomElement(this.mapHandler.roomCenters);
-            this.target = {
-                x: target[0],
-                y: target[1],
+            if (target) {
+                this.target = {
+                    x: target[0],
+                    y: target[1],
+                }
             }
         }
         this.pathToTarget(this.target);
+    }
+
+    deathMessage(): void {
+        Logger.getInstance().sendMessage(`${this.name} dies!`, {tone:"good"});
     }
 }
 

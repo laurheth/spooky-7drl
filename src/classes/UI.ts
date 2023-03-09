@@ -74,6 +74,8 @@ export default class UI {
             this.status.textContent = "Dead";
             this.status.classList.remove("good", "neutral");
             this.status.classList.add("bad");
+            // Player is dead. Might want to adjust inventory too.
+            this.updateInventory(player);
         }
     }
 
@@ -113,7 +115,7 @@ export default class UI {
             inventory.forEach((item, index) => {
                 const listItem = document.createElement("li");
                 const nameElement = document.createElement("p");
-                nameElement.textContent = item.name;
+                nameElement.textContent = item.getStatusName();
 
                 const useButton = document.createElement("button");
                 
@@ -132,8 +134,10 @@ export default class UI {
                 dropButton.onclick = () => player.dropItemByIndex(index);
     
                 listItem.appendChild(nameElement);
-                listItem.appendChild(useButton);
-                listItem.appendChild(dropButton);
+                if (Game.getInstance().player.active) {
+                    listItem.appendChild(useButton);
+                    listItem.appendChild(dropButton);
+                }
     
                 this.inventoryList.appendChild(listItem);
             })

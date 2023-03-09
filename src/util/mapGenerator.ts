@@ -1,6 +1,7 @@
 import { randomElement } from "./randomness"
 import Pathfinder from "../classes/Pathfinder"
-import { critterTypes } from "./entityTypes";
+import { critterTypes } from "./entityTypes"
+import themes from "./themes"
 
 interface MapGenParams {
     minRoomSize?: number;
@@ -12,6 +13,7 @@ interface MapGenParams {
 interface TilePlan {
     type: '#'|'.'|'door'|'red door'|'blue door'|'yellow door'|'stairs';
     roomId: number;
+    theme?: number;
 }
 
 interface RoomData {
@@ -38,6 +40,8 @@ interface ItemData {
     name: string;
     key: string;
 }
+
+const veryGoodItems = ["bomb", "hammer", "medkit", "hammer", "medkit", "chainsaw"];
 
 /**
  * Cool function to generate the map
@@ -123,7 +127,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
             const optionKey:string = `${x+option[0]},${y+option[1]}`;
             return !map.has(optionKey) || map.get(optionKey).roomId < 0 || currentPathingIds.includes(map.get(optionKey).roomId);
         }).map(option => [option[0] + x, option[1] + y]);
-    });
+    }, ([x,y]) => 1);
 
     // Lets get er done
     const neededWalls = new Set<string>();
@@ -250,11 +254,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     const items:ItemData[] = [];
     for (let i=0; i<3; i++) {
         items.push({
-            name: "sword",
-            key: randomElement(entitySpots),
-        })
-        items.push({
-            name: "bomb",
+            name: randomElement(["sword","hammer","hex key"]),
             key: randomElement(entitySpots),
         })
         items.push({
@@ -266,6 +266,18 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
             key: randomElement(entitySpots),
         })
     }
+
+    // Place some nice items in the remaining deadends
+    const coolItems = veryGoodItems.slice(0);
+    deadends.forEach(index => {
+        items.push({
+            name: randomElement(coolItems, true),
+            key: randomElement(rooms[index].spots)
+        })
+        if (coolItems.length === 0) {
+            veryGoodItems.forEach(item => coolItems.push(item));
+        }
+    })
 
     // Choose a start room from the player
     const chosenRoom = randomElement(middleRooms, true);
@@ -282,7 +294,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     // Add some critters
     const critters:CritterData[] = [];
     // Big bad should be able to chase player from the start, put them in a middle room
-    const bigKey = randomElement(rooms[randomElement(middleRooms)].spots);
+    const bigKey = randomElement(rooms[randomElement(middleRooms)].spots, true);
     critters.push({
         name: "bigBad",
         key: bigKey
@@ -314,10 +326,35 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     const roomToPlaceLastKey = randomElement([...deadends, ...middleRooms]);
     placeKey(keyToPlace, randomElement(rooms[roomToPlaceLastKey].spots));
 
+    // Decorate rooms
+    const otherObjects:ItemData[] = [];
+    rooms.forEach(room => {
+        const theme = Math.floor(themes.length * Math.random());
+        for (let x = room.xBounds[0]; x <= room.xBounds[1]; x++) {
+            for (let y = room.yBounds[0]; y <= room.yBounds[1]; y++) {
+                const key = `${x},${y}`;
+                if (map.has(key)) {
+                    map.get(key).theme = theme;
+                }
+            }
+        }
+        const themeDecos = themes[theme].decorations;
+        if (themeDecos.length > 0) {
+            let decorationNumber = Math.floor(Math.random() * (room.spots.length / 4));
+            decorationNumber = Math.min(Math.max(1,decorationNumber), room.spots.length);
+            for (let i=0; i<decorationNumber; i++) {
+                otherObjects.push({
+                    name: randomElement(themeDecos),
+                    key: randomElement(room.spots, true)
+                })
+            }
+        }
+    });
+
     // Others
     for (let i=0; i<10; i++) {
         critters.push({
-            name: "testCritter",
+            name: "chair",
             key: randomElement(entitySpots, true)
         })
     }
@@ -328,7 +365,8 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         playerStart: playerStart,
         decorations: decorations,
         items: items,
-        critters: critters
+        critters: critters,
+        otherObjects: otherObjects
     }
 }
 

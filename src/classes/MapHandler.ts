@@ -9,6 +9,7 @@ import VisionHandler from "./VisionHandler"
 import Pathfinder from "./Pathfinder"
 import { objectFactory, itemFactory } from "../util/entityTypes"
 import Logger from "./Logger"
+import themes from "../util/themes"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -55,6 +56,12 @@ class MapHandler {
                     return false;
                 }
             }).map(option => [option[0] + x, option[1] + y]);
+        }, ([x,y]) => {
+            const key = `${x},${y},1`;
+            if (this.tileMap.has(key)) {
+                return this.tileMap.get(key).entity ? 2 : 1;
+            }
+            return 1;
         });
         // Setup vision
         this.visionHandler = new VisionHandler({
@@ -97,15 +104,18 @@ class MapHandler {
         generatedMap.map.forEach((tilePlan, key) => {
             const [tx, ty] = key.split(',').map(x => parseInt(x));
             let newTile: Tile;
+            const themeId = tilePlan.theme ? tilePlan.theme : 0;
+            const theme = themes[themeId];
             if (tilePlan.type === '#') {
                 // wall
                 newTile = new Tile({
                     passable: false,
                     seeThrough: false,
-                    sprite: Sprite.from("tiles/testWall.png"), // TODO: cache sprites instead of regenerating them. Also, use a spriteSheet
+                    sprite: Sprite.from(`tiles/${theme.wall}.png`), // TODO: cache sprites instead of regenerating them. Also, use a spriteSheet
                     x: tx * this.tileScale,
                     y: ty * this.tileScale,
-                    parent: this.tileContainer
+                    parent: this.tileContainer,
+                    baseTint: theme.wallTint,
                 });
                 this.tileMap.set(`${tx},${ty},1`, newTile);
             } else if (tilePlan.type.includes("door")) {
@@ -113,11 +123,13 @@ class MapHandler {
                 newTile = new Tile({
                     passable: true,
                     seeThrough: true,
-                    sprite: Sprite.from("tiles/testFloor.png"),
+                    sprite: Sprite.from(`tiles/${theme.floor}.png`),
                     x: tx * this.tileScale,
                     y: ty * this.tileScale,
-                    parent: this.tileContainer
+                    parent: this.tileContainer,
+                    baseTint: theme.floorTint,
                 });
+                newTile.sprite.tint = theme.floorTint;
                 this.tileMap.set(`${tx},${ty},1`, newTile);
                 objectFactory({x:tx,y:ty,z:1}, tilePlan.type, this);
             } else if (tilePlan.type === "stairs") {
@@ -129,7 +141,8 @@ class MapHandler {
                     x: tx * this.tileScale,
                     y: ty * this.tileScale,
                     parent: this.tileContainer,
-                    levelExit: true
+                    levelExit: true,
+                    baseTint: 0xFFFFFF,
                 });
                 this.tileMap.set(`${tx},${ty},1`, newTile);
             } else {
@@ -137,11 +150,13 @@ class MapHandler {
                 newTile = new Tile({
                     passable: true,
                     seeThrough: true,
-                    sprite: Sprite.from("tiles/testFloor.png"),
+                    sprite: Sprite.from(`tiles/${theme.floor}.png`),
                     x: tx * this.tileScale,
                     y: ty * this.tileScale,
-                    parent: this.tileContainer
+                    parent: this.tileContainer,
+                    baseTint: theme.floorTint,
                 });
+                newTile.sprite.tint = theme.floorTint;
                 this.tileMap.set(`${tx},${ty},1`, newTile);
             }
         });
@@ -157,7 +172,7 @@ class MapHandler {
         } else {
             const player = new Player({
                 name: "you",
-                sprite: Sprite.from("sprites/testFace.png"),
+                sprite: Sprite.from("sprites/hero.png"),
                 x: px,
                 y: py,
                 z: 1,
@@ -188,6 +203,12 @@ class MapHandler {
                 z: 1,
                 mapHandler: this
             })
+        });
+
+        // Add other objects
+        generatedMap.otherObjects.forEach(item => {
+            const [tx, ty] = item.key.split(',').map(x => parseInt(x));
+            objectFactory({x:tx, y:ty, z:1}, item.name, this);
         });
 
         this.roomCenters = generatedMap.rooms.map(x=>x.center);

@@ -247,6 +247,24 @@ class Item {
         }
         return false;
     }
+
+    getStatusName() {
+        if (this.equippable) {
+            let conditionMessage:string;
+            if (this.durability >= 8) {
+                conditionMessage = "Good condition";
+            } else if (this.durability >= 6) {
+                conditionMessage = "Scratched";
+            } else if (this.durability > 3) {
+                conditionMessage = "Rough shape";
+            } else {
+                conditionMessage = "Almost broken";
+            }
+            return `${this.name} - ${conditionMessage}`;
+        } else {
+            return this.name;
+        }
+    }
 }
 
 export default Item;

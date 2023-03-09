@@ -9,7 +9,7 @@ import MapHandler from "../classes/MapHandler"
 export type CritterAction = "randomStep" | "walkToTarget" | "pathToTarget" | "patrol" | "pause";
 
 export const critterTypes = {
-    testCritter: {
+    chair: {
         name: "the possessed chair",
         spriteName: "sprites/murderChair.png",
         hp: 50,
@@ -50,6 +50,45 @@ export const critterTypes = {
  */
 export function objectFactory(position:{x:number, y:number, z:number}, typeName:string, mapHandler:MapHandler): Entity {
     switch(typeName) {
+        case "cabinet":
+            return new Entity({
+                name: "cabinet",
+                sprite: Sprite.from("sprites/cabinet.png"),
+                mapHandler: mapHandler,
+                blocksVision: false,
+                ...position,
+                acts: true,
+                actPeriod: 200,
+                actionTypes:["push"],
+                hp: 1,
+                removeOnDeath: true,
+            })
+        case "box":
+            return new Entity({
+                name: "box",
+                sprite: Sprite.from("sprites/box.png"),
+                mapHandler: mapHandler,
+                blocksVision: false,
+                ...position,
+                acts: true,
+                actPeriod: 200,
+                actionTypes:["push"],
+                hp: 1,
+                removeOnDeath: true,
+            })
+        case "bookshelf":
+            return new Entity({
+                name: "bookshelf",
+                sprite: Sprite.from("sprites/bookShelf.png"),
+                mapHandler: mapHandler,
+                blocksVision: false,
+                ...position,
+                acts: true,
+                actPeriod: 200,
+                actionTypes:["push"],
+                hp: 1,
+                removeOnDeath: true,
+            })
         case "door":
             return new Entity({
                 name: "door",
@@ -116,12 +155,48 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 sprite: Sprite.from("sprites/testSword.png"),
                 mapHandler: mapHandler,
                 ...position,
-                name: "sword",
+                name: "big knife",
                 equippable: true,
                 strength: 10,
                 attackString: "slash",
                 durability: 5 + 10 * Math.random(),
                 durabilityRate: 0.5,
+            });
+        case "hammer":
+            return new Item({
+                sprite: Sprite.from("sprites/hammer.png"),
+                mapHandler: mapHandler,
+                ...position,
+                name: "hammer",
+                equippable: true,
+                strength: 15,
+                attackString: "smash",
+                durability: 5 + 10 * Math.random(),
+                durabilityRate: 0.33,
+            });
+        case "hex key":
+            return new Item({
+                sprite: Sprite.from("sprites/alanWrench.png"),
+                mapHandler: mapHandler,
+                ...position,
+                name: "hex key",
+                equippable: true,
+                strength: 8,
+                attackString: "unscrew",
+                durability: 5 + 10 * Math.random(),
+                durabilityRate: 0.33,
+            });
+        case "chainsaw":
+            return new Item({
+                sprite: Sprite.from("sprites/chainsaw.png"),
+                mapHandler: mapHandler,
+                ...position,
+                name: "chainsaw",
+                equippable: true,
+                strength: 30,
+                attackString: "chainsaw",
+                durability: 10 + 2 * Math.random(),
+                durabilityRate: 0.01,
             });
         case "bandaid":
             return new Item({

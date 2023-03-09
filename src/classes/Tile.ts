@@ -10,6 +10,7 @@ interface TileParams {
     x: number;
     y: number;
     levelExit?: boolean;
+    baseTint: number;
 }
 
 /**
@@ -26,8 +27,9 @@ class Tile {
     item: Item|null;
     decoration: Sprite;
     levelExit: boolean;
+    baseTintRgb: number[];
 
-    constructor({passable, seeThrough, sprite, x, y, parent, levelExit = false}:TileParams) {
+    constructor({passable, seeThrough, sprite, x, y, parent, levelExit = false, baseTint}:TileParams) {
         this.passable = passable;
         this._seeThrough = seeThrough;
         this.seen = false; // Start not previously seen
@@ -40,6 +42,7 @@ class Tile {
         this.sprite.y = y;
         this.light = 0;
         this.levelExit = levelExit;
+        this.baseTintRgb = utils.hex2rgb(baseTint) as number[];
     }
 
     see(light:number) {
@@ -48,14 +51,18 @@ class Tile {
         this.seen = this.seen || this.visible;
         this.sprite.visible = this.visible;
         const clampedLight = Math.max(Math.min(light, 1), 0);
-        const tint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
+        const tint = utils.rgb2hex([
+            clampedLight * this.baseTintRgb[0],
+            clampedLight * this.baseTintRgb[1],
+            clampedLight * this.baseTintRgb[2]]);
+        const contentTint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
         this.sprite.tint = tint;
         if (this.decoration) {
-            this.decoration.tint = tint;
+            this.decoration.tint = contentTint;
         }
         if (this.item) {
             this.item.sprite.visible = this.visible;
-            this.item.sprite.tint = tint;
+            this.item.sprite.tint = contentTint;
         }
     }
 
