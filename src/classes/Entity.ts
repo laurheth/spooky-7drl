@@ -24,6 +24,7 @@ export interface EntityParams {
     name: string;
     strength?:number;
     needsKey?:string;
+    removeOnDeath?:boolean;
 }
 
 /**
@@ -57,7 +58,8 @@ class Entity {
     spriteForDamageTinting: Sprite;
     damageTintAmount: number = 0;
     baseTint: number = 0xFFFFFF;
-    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], entityFlags=[], actPeriod=1000, movePeriod, name, strength=0, needsKey}:EntityParams) {
+    removeOnDeath: boolean;
+    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], entityFlags=[], actPeriod=1000, movePeriod, name, strength=0, needsKey, removeOnDeath=false}:EntityParams) {
         this.sprite = sprite;
         this.spriteForDamageTinting = sprite;
         this.mapHandler = mapHandler;
@@ -86,6 +88,7 @@ class Entity {
         this.strength = strength;
         this.entityFlags = entityFlags;
         this.needsKey = needsKey;
+        this.removeOnDeath = removeOnDeath;
     }
 
     getHealthFraction() {
@@ -315,6 +318,10 @@ class Entity {
             rememberTile = this.currentTile;
             // Remove self from previous tile
             this.currentTile.entity = null;
+            if (this.removeOnDeath) {
+                this.currentTile = null;
+                this.sprite.visible = false;
+            }
         }
         if (this.entityFlags.includes("undying")) {
             Logger.getInstance().sendMessage(`The ${this.name} was stunned!`, {tone:"good"});

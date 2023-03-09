@@ -74,13 +74,19 @@ class Tile {
 
     addDecoration(decoration:Sprite, override:boolean = false) {
         if (override && this.decoration) {
-            this.decoration.destroy();
-            this.decoration = null;
+            this.removeDecoration();
         }
         if (!this.decoration) {
             this.decoration = decoration
             this.sprite.addChild(decoration);
         }
+    }
+
+    removeDecoration() {
+        if (this.decoration) {
+            this.sprite.removeChild(this.decoration);
+        }
+        this.decoration = null;
     }
 }
 

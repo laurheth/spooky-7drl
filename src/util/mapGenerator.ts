@@ -254,6 +254,10 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
             key: randomElement(entitySpots),
         })
         items.push({
+            name: "bomb",
+            key: randomElement(entitySpots),
+        })
+        items.push({
             name: "bandaid",
             key: randomElement(entitySpots),
         })

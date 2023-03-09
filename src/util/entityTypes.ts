@@ -59,7 +59,9 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 ...position,
                 acts: true,
                 actPeriod: 5000,
-                actionTypes:["open"]
+                actionTypes:["open"],
+                hp: 1,
+                removeOnDeath: true,
             })
         case "red door":
             return new Entity({
@@ -72,6 +74,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 actPeriod: 5000,
                 actionTypes:["unlock"],
                 needsKey: "red key",
+                removeOnDeath: true,
             })
         case "blue door":
             return new Entity({
@@ -84,6 +87,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 actPeriod: 5000,
                 actionTypes:["unlock"],
                 needsKey: "blue key",
+                removeOnDeath: true,
             })
         case "yellow door":
             return new Entity({
@@ -96,6 +100,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 actPeriod: 5000,
                 actionTypes:["unlock"],
                 needsKey: "yellow key",
+                removeOnDeath: true,
             })
     }
     return null;
@@ -146,6 +151,23 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                     type: "heal",
                     value: 50
                 }
+            });
+        case "bomb":
+            return new Item({
+                sprite: Sprite.from("sprites/bomb.png"),
+                mapHandler: mapHandler,
+                ...position,
+                name: "bomb",
+                equippable: false,
+                strength: 0,
+                attackString: "no",
+                durability: 1,
+                durabilityRate: 0,
+                useAction: {
+                    type: "bomb",
+                    value: "40,8,4000"
+                },
+                alternateSprite: Sprite.from("sprites/bombLit.png")
             });
         case "yellow key":
         case "blue key":

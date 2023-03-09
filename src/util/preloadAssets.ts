@@ -27,6 +27,8 @@ const spriteList = [
     "yellowKey",
     "blueKey",
     "redKey",
+    "bomb",
+    "bombLit",
 ]
 
 const decorationsPrefix = "decoration/";

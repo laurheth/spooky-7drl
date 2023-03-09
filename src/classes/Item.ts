@@ -1,16 +1,19 @@
-import { Sprite } from "pixi.js"
+import { Sprite, Texture } from "pixi.js"
 import MapHandler from "./MapHandler"
 import Tile from "./Tile"
 import Player from "./Player"
+import Entity from "./Entity"
 import Logger from "./Logger"
+import Game from "./Game"
 
 interface UseAction {
-    type: "heal"|"key";
+    type: "heal"|"key"|"bomb";
     value: number|string;
 }
 
 export interface ItemParams {
     sprite: Sprite;
+    alternateSprite?: Sprite;
     name: string;
     mapHandler: MapHandler;
     x: number;
@@ -29,6 +32,7 @@ export interface ItemParams {
  */
 class Item {
     sprite:Sprite;
+    alternateSprite:Sprite;
     mapHandler:MapHandler;
     x: number;
     y: number;
@@ -41,7 +45,7 @@ class Item {
     durability: number;
     durabilityRate: number;
     useAction: UseAction;
-    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate, useAction}:ItemParams) {
+    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate, useAction, alternateSprite}:ItemParams) {
         this.mapHandler = mapHandler;
         this.sprite = sprite;
         this.sprite.zIndex = -1;
@@ -55,6 +59,7 @@ class Item {
         this.durabilityRate = durabilityRate;
         this.useAction = useAction;
         this.findValidSpotAndPlaceSelf(x, y, z);
+        this.alternateSprite = alternateSprite;
     }
 
     placeSelf(x:number, y:number, z:number):boolean {
@@ -136,6 +141,109 @@ class Item {
             }
             Logger.getInstance().sendMessage("Nothing here needs to be unlocked with that!");
             return false;
+        }
+        if (this.useAction.type === "bomb" && typeof this.useAction.value === "string") {
+            let [dmg, range, time] = this.useAction.value.split(",").map(x=>parseInt(x));
+            const {x, y, z, currentTile} = player;
+            const logger = Logger.getInstance();
+            logger.sendMessage("The bomb has been lit! Run!!", {tone:"bad", important:true});
+            currentTile.addDecoration(this.alternateSprite, true);
+            const warnings = ["1...", "2...", "3..."];
+            const effectedSet = new Set<string>();
+            const effectedEntities = new Set<Entity>();
+            const fireMap = new Map<Sprite, number>();
+            const damageAtTile = (tile:Tile) => {
+                if (tile && tile.entity && !effectedEntities.has(tile.entity)) {
+                    tile.entity.damage(dmg * range);
+                    effectedEntities.add(tile.entity);
+                }
+            }
+            const pseudoActor = {tick:(deltaMS:number) => {
+                time -= deltaMS;
+                if (time < 3000 && warnings.length === 3) {
+                    logger.sendMessage(warnings.pop());
+                }
+                if (time < 2000 && warnings.length === 2) {
+                    logger.sendMessage(warnings.pop());
+                }
+                if (time < 1000 && warnings.length === 1) {
+                    logger.sendMessage(warnings.pop());
+                }
+                // Kaboom!
+                fireMap.forEach((t, s) =>{
+                    fireMap.set(s, t + deltaMS);
+                    if (t < 300) {
+                        s.tint = 0xFFFF00;
+                    } else if (t < 600) {
+                        s.tint = 0xFF0000;
+                    } else if (t < 900) {
+                        s.tint = 0x666666;
+                    } else {
+                        fireMap.delete(s);
+                        s.visible = false;
+                    }
+                });
+                if (time < 0 && range > 0) {
+                    time += 100;
+                    range -= 1;
+                    if (effectedSet.size === 0) {
+                        this.mapHandler.sound({
+                            x: x,
+                            y: y
+                        }, {
+                            seen: "BOOM!!!",
+                            unseen: "BOOM!!"
+                        }, 100, true);
+                        currentTile.removeDecoration();
+                        damageAtTile(currentTile);
+                        effectedSet.add(`${x},${y},${z}`);
+                        const boomSprite = Sprite.from(Texture.WHITE);
+                        boomSprite.width = this.mapHandler.tileScale;
+                        boomSprite.height = this.mapHandler.tileScale;
+                        boomSprite.tint = 0xFFFF00;
+                        currentTile.addDecoration(boomSprite);
+                        fireMap.set(boomSprite, 0);
+                    } else {
+                        const toAdd:string[] = [];
+                        effectedSet.forEach(key => {
+                            const [dx, dy, dz] = key.split(',').map(x=>parseInt(x));
+                            [[-1,0],[1,0],[0,1],[0,-1]].forEach(step => {
+                                const newKey = `${dx+step[0]},${dy+step[1]},${dz}`;
+                                if (this.mapHandler.tileMap.has(newKey) && this.mapHandler.tileMap.get(newKey).passable) {
+                                    const newTile = this.mapHandler.tileMap.get(newKey);
+                                    damageAtTile(newTile);
+                                    if (!effectedSet.has(newKey)) {
+                                        toAdd.push(newKey);
+                                        const boomSprite = Sprite.from(Texture.WHITE);
+                                        boomSprite.width = this.mapHandler.tileScale;
+                                        boomSprite.height = this.mapHandler.tileScale;
+                                        boomSprite.tint = 0xFFFF00;
+                                        newTile.addDecoration(boomSprite);
+                                        fireMap.set(boomSprite, 0);
+                                    }
+                                }
+                            });
+                        });
+                        toAdd.forEach(key=>effectedSet.add(key));
+                    }
+                }
+                if (range <= 0 && fireMap.size <= 0) {
+                    const index = this.mapHandler.actors.indexOf(pseudoActor);
+                    if (index >= 0) {
+                        this.mapHandler.actors.splice(index, 1);
+                    }
+                    effectedSet.forEach(key => {
+                        if (this.mapHandler.tileMap.has(key)) {
+                            const tile = this.mapHandler.tileMap.get(key);
+                            tile.removeDecoration();
+                        }
+                    });
+                }
+            }};
+
+            this.mapHandler.actors.push(pseudoActor);
+
+            return true;
         }
         return false;
     }

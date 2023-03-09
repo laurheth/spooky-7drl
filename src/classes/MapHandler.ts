@@ -30,7 +30,7 @@ class MapHandler {
     spriteContainer: Container;
     tileMap: Map<string, Tile>;
     tileScale: number;
-    actors: Entity[] = [];
+    actors: {tick:(deltaMS:number)=>void}[] = [];
     active: boolean = false;
     visionHandler: VisionHandler;
     pathfinder: Pathfinder;
