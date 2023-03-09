@@ -5,8 +5,8 @@ import Player from "./Player"
 import Logger from "./Logger"
 
 interface UseAction {
-    type: "heal";
-    quantity: number;
+    type: "heal"|"key";
+    value: number|string;
 }
 
 export interface ItemParams {
@@ -114,15 +114,28 @@ class Item {
 
     // Use the item!
     use(player:Player):boolean {
-        if (this.useAction.type === "heal") {
+        if (this.useAction.type === "heal" && typeof this.useAction.value === "number") {
             if (player.hp < player.maxHp) {
-                player.damage(-this.useAction.quantity);
+                player.damage(-this.useAction.value);
                 Logger.getInstance().sendMessage("You feel healthier.");
                 return true;
             } else {
                 Logger.getInstance().sendMessage("You are already fully healed!");
                 return false;
             }
+        }
+        if (this.useAction.type === "key") {
+            for (let i=-1;i<2;i++) {
+                for (let j=-1;j<2;j++) {
+                    const tile = this.mapHandler.getTile(player.x + i, player.y + j, player.z);
+                    if (tile && tile.entity && tile.entity.needsKey === this.name) {
+                        tile.entity.actUpon(player);
+                        return true;
+                    }
+                }
+            }
+            Logger.getInstance().sendMessage("Nothing here needs to be unlocked with that!");
+            return false;
         }
         return false;
     }

@@ -23,6 +23,14 @@ li {
     list-style: none;
 }
 
+.gameHolder {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-height: calc(100vh - 100px);
+}
+
 .inventory {
     position: absolute;
     top: 0;

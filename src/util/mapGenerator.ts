@@ -10,7 +10,7 @@ interface MapGenParams {
 }
 
 interface TilePlan {
-    type: '#'|'.'|'+';
+    type: '#'|'.'|'door'|'red door'|'blue door'|'yellow door'|'stairs';
     roomId: number;
 }
 
@@ -20,6 +20,8 @@ interface RoomData {
     yBounds: [number, number];
     expectedFloor: number;
     expectedWall: number;
+    doors: string[];
+    spots: string[];
 }
 
 interface DecorationData {
@@ -33,7 +35,7 @@ interface CritterData {
 }
 
 interface ItemData {
-    name: "sword" | "bandaid" | "medkit";
+    name: string;
     key: string;
 }
 
@@ -42,7 +44,7 @@ interface ItemData {
  */
 export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomCount=10, multipleConnectionChance=0.5}:MapGenParams = {}) {
     const map = new Map<string, TilePlan>();
-    const roomCenters:RoomData[] = [];
+    const rooms:RoomData[] = [];
     const roomConnectionTracker:number[][] = [];
     const entitySpots:string[] = [];
     let maxY = 0;
@@ -78,6 +80,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         // Build the room
         let floors = 0;
         let walls = 0;
+        const roomSpots:string[] = [];
         for (let i=0; i<width; i++) {
             for (let j=0; j<height; j++) {
                 const key = `${i+x},${j+y}`;
@@ -87,23 +90,26 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
                         map.set(key, {type:'#', roomId:roomCount});
                     } else if (map.get(key).type === '.') {
                         floors++;
-                        map.set(key, {type:'+', roomId:roomCount});
+                        map.set(key, {type:'door', roomId:roomCount});
                     }
                 } else {
                     map.set(key, {type:'.', roomId:roomCount});
                     entitySpots.push(key);
+                    roomSpots.push(key);
                 }
             }
         }
 
         maxY = Math.max(maxY, y + height + 2);
         // Record roomCenter for future hallway math
-        roomCenters.push({
+        rooms.push({
             center: roomCenter,
             xBounds: [x, x+width-1],
             yBounds: [y, y+height-1],
             expectedFloor: floors,
-            expectedWall: walls
+            expectedWall: walls,
+            doors: [],
+            spots: roomSpots,
         });
     }
 
@@ -122,19 +128,19 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     // Lets get er done
     const neededWalls = new Set<string>();
     const possibleDoors = new Set<string>();
-    roomCenters.forEach((roomData, index) => {
+    rooms.forEach((roomData, index) => {
         const roomCenter = roomData.center;
-        const options = roomCenters.map((x,i) => i).filter(otherIndex => !roomConnectionTracker[index].includes(otherIndex));
+        const options = rooms.map((x,i) => i).filter(otherIndex => !roomConnectionTracker[index].includes(otherIndex));
         options.sort((indexA, indexB) => {
-            const roomA:number[] = roomCenters[indexA].center;
-            const roomB:number[] = roomCenters[indexB].center;
+            const roomA:number[] = rooms[indexA].center;
+            const roomB:number[] = rooms[indexB].center;
             return (Math.abs(roomA[0] - roomCenter[0]) + Math.abs(roomA[1] - roomCenter[1]) - Math.abs(roomB[0] - roomCenter[0]) + Math.abs(roomB[1] - roomCenter[1]))
         });
 
         const connections = Math.min((multipleConnectionChance > Math.random()) ? 2 : 1, options.length - 1);
         for (let i=0; i<connections; i++) {
             const otherIndex = options[i+1];
-            const otherCenter = roomCenters[otherIndex].center;
+            const otherCenter = rooms[otherIndex].center;
             currentPathingIds = [index, otherIndex];
             const path = pathfinder.findPath(roomCenter, otherCenter);
             if (path.length > 0) {
@@ -148,7 +154,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
                     if (tile.type === '#') {
                         if (tile.roomId != -1) {
                             possibleDoors.add(key);
-                            tile.type = '+';
+                            tile.type = 'door';
                         } else {
                             tile.type = '.';
                         }
@@ -195,7 +201,8 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
 
     // Which rooms are deadends? Might be useful knowledge
     const deadends:number[] = [];
-    roomCenters.forEach((roomData, index) => {
+    const middleRooms:number[] = [];
+    rooms.forEach((roomData, index) => {
         let floorCount = 0;
         let wallCount = 0;
         for (let x=roomData.xBounds[0]; x<=roomData.xBounds[1]; x++) {
@@ -208,13 +215,23 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
                     floorCount++;
                 } else if (map.get(key).type === '#') {
                     wallCount++;
+                } else if (map.get(key).type === "door") {
+                    roomData.doors.push(key);
                 }
             }
         }
         if (wallCount >= roomData.expectedWall - 1) {
             deadends.push(index);
+        } else {
+            middleRooms.push(index);
         }
     });
+
+    // Make sure there's rooms to choose from for initial items
+    if (middleRooms.length <= 2) {
+        middleRooms.push(deadends.pop());
+        middleRooms.push(deadends.pop());
+    }
 
     const decorations:DecorationData[] = [];
     // Splatter some blood
@@ -246,23 +263,65 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         })
     }
 
+    // Choose a start room from the player
+    const chosenRoom = randomElement(middleRooms, true);
+    const playerStart = randomElement(rooms[chosenRoom].spots, true);
+
+    // This would be nicer with sets
+    rooms[chosenRoom].spots.forEach(spot => {
+        const index = entitySpots.indexOf(spot);
+        if (index >= 0) {
+            entitySpots.splice(index, 1);
+        }
+    });
+    
     // Add some critters
     const critters:CritterData[] = [];
+    // Big bad should be able to chase player from the start, put them in a middle room
+    const bigKey = randomElement(rooms[randomElement(middleRooms)].spots);
+    critters.push({
+        name: "bigBad",
+        key: bigKey
+    })
+    entitySpots.splice(entitySpots.indexOf(bigKey), 1);
+
+    // Figure out keys and locks
+    const keyOptions = ["red", "blue", "yellow"];
+    let keyToPlace = "stairs";
+    const placeKey = (keyWeArePlacing:string, mapKey:string) => {
+        if (keyWeArePlacing === "stairs") {
+            map.get(mapKey).type = keyWeArePlacing;
+        } else {
+            items.push({
+                name: keyWeArePlacing,
+                key: mapKey
+            });
+        }
+    }
+    while (keyOptions.length > 0 && deadends.length > 0) {
+        const chosenDeadend = randomElement(deadends, true);
+        const chosenKey = randomElement(keyOptions, true);
+        const doorType = `${chosenKey} door` as "red door" | "yellow door" | "blue door";
+        rooms[chosenDeadend].doors.forEach(door => map.get(door).type = doorType);
+        placeKey(keyToPlace, randomElement(rooms[chosenDeadend].spots));
+        keyToPlace = `${chosenKey} key`;
+    }
+    // Place last key something open
+    const roomToPlaceLastKey = randomElement([...deadends, ...middleRooms]);
+    placeKey(keyToPlace, randomElement(rooms[roomToPlaceLastKey].spots));
+
+    // Others
     for (let i=0; i<10; i++) {
         critters.push({
             name: "testCritter",
             key: randomElement(entitySpots, true)
         })
     }
-    critters.push({
-        name: "bigBad",
-        key: randomElement(entitySpots, true)
-    })
 
     return {
         map: map,
-        roomCenters: roomCenters,
-        playerStart: randomElement(entitySpots),
+        rooms: rooms,
+        playerStart: playerStart,
         decorations: decorations,
         items: items,
         critters: critters

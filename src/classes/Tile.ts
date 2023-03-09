@@ -9,6 +9,7 @@ interface TileParams {
     parent: Container;
     x: number;
     y: number;
+    levelExit?: boolean;
 }
 
 /**
@@ -24,8 +25,9 @@ class Tile {
     entity: Entity|null;
     item: Item|null;
     decoration: Sprite;
+    levelExit: boolean;
 
-    constructor({passable, seeThrough, sprite, x, y, parent}:TileParams) {
+    constructor({passable, seeThrough, sprite, x, y, parent, levelExit = false}:TileParams) {
         this.passable = passable;
         this._seeThrough = seeThrough;
         this.seen = false; // Start not previously seen
@@ -37,6 +39,7 @@ class Tile {
         this.sprite.x = x;
         this.sprite.y = y;
         this.light = 0;
+        this.levelExit = levelExit;
     }
 
     see(light:number) {

@@ -47,7 +47,12 @@ class MapHandler {
             const options = [[-1,0],[1,0],[0,1],[0,-1]];
             return options.filter(option => {
                 const optionKey = `${x+option[0]},${y+option[1]},1`;
-                return this.tileMap.has(optionKey) && this.tileMap.get(optionKey).passable;
+                if (this.tileMap.has(optionKey)) {
+                    const tile = this.tileMap.get(optionKey);
+                    return tile.passable && (!tile.entity || !tile.entity.pathBlocking);
+                } else {
+                    return false;
+                }
             }).map(option => [option[0] + x, option[1] + y]);
         });
         // Setup vision
@@ -80,7 +85,7 @@ class MapHandler {
                     parent: this.tileContainer
                 });
                 this.tileMap.set(`${tx},${ty},1`, newTile);
-            } else if (tilePlan.type === '+') {
+            } else if (tilePlan.type.includes("door")) {
                 // door
                 newTile = new Tile({
                     passable: true,
@@ -91,7 +96,19 @@ class MapHandler {
                     parent: this.tileContainer
                 });
                 this.tileMap.set(`${tx},${ty},1`, newTile);
-                objectFactory({x:tx,y:ty,z:1}, "door", this);
+                objectFactory({x:tx,y:ty,z:1}, tilePlan.type, this);
+            } else if (tilePlan.type === "stairs") {
+                // stairs
+                newTile = new Tile({
+                    passable: true,
+                    seeThrough: true,
+                    sprite: Sprite.from("tiles/stairsDown.png"),
+                    x: tx * this.tileScale,
+                    y: ty * this.tileScale,
+                    parent: this.tileContainer,
+                    levelExit: true
+                });
+                this.tileMap.set(`${tx},${ty},1`, newTile);
             } else {
                 // floor
                 newTile = new Tile({
@@ -143,7 +160,7 @@ class MapHandler {
             })
         });
 
-        this.roomCenters = generatedMap.roomCenters.map(x=>x.center);
+        this.roomCenters = generatedMap.rooms.map(x=>x.center);
         this.spriteContainer.sortChildren();
     }
 

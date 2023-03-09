@@ -88,6 +88,8 @@ class Game {
     handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup") {
         if (eventType === "keydown" && event.key === "i") {
             UI.getInstance().toggleInventory();
+        } else if (eventType === "keydown" && (event.key === "Escape" || event.key === "Esc")) {
+            UI.getInstance().closeInventory();
         } else {
             if (this.player) {
                 this.player.handleInput(event, eventType);

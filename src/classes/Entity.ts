@@ -3,9 +3,10 @@ import MapHandler from "./MapHandler"
 import Tile from "./Tile"
 import Logger from "./Logger"
 import Player from "./Player"
+import UI from "./UI"
 
-export type ActionTypes = "open" | "violence" | "push" | "swap";
-export type EntityFlags = "important" | "big";
+export type ActionTypes = "open" | "violence" | "push" | "swap" | "unlock";
+export type EntityFlags = "important" | "big" | "undying";
 
 export interface EntityParams {
     sprite: Sprite;
@@ -22,6 +23,7 @@ export interface EntityParams {
     movePeriod?:number;
     name: string;
     strength?:number;
+    needsKey?:string;
 }
 
 /**
@@ -50,7 +52,9 @@ class Entity {
     team: number = 0;
     strength: number;
     actionQueue: (()=>boolean)[] = [];
-    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], entityFlags=[], actPeriod=1000, movePeriod, name, strength=0}:EntityParams) {
+    needsKey: string;
+    pathBlocking: boolean;
+    constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], entityFlags=[], actPeriod=1000, movePeriod, name, strength=0, needsKey}:EntityParams) {
         this.sprite = sprite;
         this.mapHandler = mapHandler;
         if (acts) {
@@ -65,6 +69,9 @@ class Entity {
         this.maxHp = hp;
         this.blocksVision = blocksVision;
         this.actionTypes = actionTypes;
+        if (this.actionTypes.includes("unlock")) {
+            this.pathBlocking = true;
+        }
         this.actPeriod = actPeriod;
         if (movePeriod) {
             this.spriteSpeed = 1 / (movePeriod);
@@ -74,6 +81,7 @@ class Entity {
         this.name = name;
         this.strength = strength;
         this.entityFlags = entityFlags;
+        this.needsKey = needsKey;
     }
 
     getHealthFraction() {
@@ -125,7 +133,7 @@ class Entity {
 
     // Get acted upon
     actUpon(actor:Entity) {
-        this.actionTypes.forEach(actionType => {
+        [...this.actionTypes].forEach(actionType => {
             this.performSpecificAction(actionType, actor);
         });
         // Some bonus actions
@@ -137,6 +145,23 @@ class Entity {
 
     performSpecificAction(actionType:ActionTypes, actor:Entity) {
         switch(actionType) {
+            case "unlock":
+                // Only the player can unlock
+                if (actor instanceof Player) {
+                    const keyIndex = actor.inventory.map(x=>x.name).indexOf(this.needsKey);
+                    if (keyIndex >= 0) {
+                        actor.inventory.splice(keyIndex, 1);
+                        UI.getInstance().updateInventory(actor);
+                        this.actionTypes.splice(this.actionTypes.indexOf("unlock"), 1);
+                        this.actionTypes.push("open");
+                        this.pathBlocking = false;
+                        Logger.getInstance().sendMessage(`You used the ${this.needsKey} to unlock the ${this.name}!`, {tone:"good"});
+                        this.needsKey = "";
+                    } else {
+                        Logger.getInstance().sendMessage(`This door is locked! You need a ${this.needsKey}!`, {tone:"bad"});
+                    }
+                }
+                break;
             // This is a door. Open it!
             case "open":
                 let rememberTile:Tile = null;
@@ -217,9 +242,6 @@ class Entity {
 
     // Act!
     act() {
-        if (!this.active) {
-            return;
-        }
         const action = this.actionQueue.shift();
         if (action) {
             if (!action()) {
@@ -273,12 +295,32 @@ class Entity {
 
     die() {
         this.active = false;
+        let rememberTile: Tile;
         if (this.currentTile) {
+            rememberTile = this.currentTile;
             // Remove self from previous tile
             this.currentTile.entity = null;
             this.currentTile = null;
         }
-        this.sprite.visible = false;
+        if (this.entityFlags.includes("undying")) {
+            Logger.getInstance().sendMessage(`The ${this.name} was stunned!`, {tone:"good"});
+            this.clock = -30000;
+            this.actionQueue.push(()=>{
+                this.active = true;
+                this.hp = this.maxHp;
+                if (rememberTile.visible) {
+                    Logger.getInstance().sendMessage(`The ${this.name} has regained their strength!`, {tone:"bad"});
+                }
+                this.moveTo(this.x, this.y, this.z);
+                return true;
+            });
+        } else {
+            if (this instanceof Player) {
+                Logger.getInstance().sendMessage(`You die...`, {tone:"bad", important: true});
+            } else {
+                Logger.getInstance().sendMessage(`The ${this.name} dies!`, {tone:"good"});
+            }
+        }
     }
 
     setVisibility(light:number) {

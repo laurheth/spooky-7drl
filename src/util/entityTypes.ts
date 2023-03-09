@@ -29,7 +29,7 @@ export const critterTypes = {
     bigBad: {
         name: "the Undying Spirit of Friday",
         spriteName: "sprites/testBigCritter.png",
-        hp: Infinity,
+        hp: 100,
         actPeriod: 400,
         movePeriod: 400,
         idleActions: ["patrol"] as CritterAction[],
@@ -37,7 +37,7 @@ export const critterTypes = {
         awareness: 1,
         persistence: 20,
         actionTypes: ["violence"] as ActionTypes[],
-        entityFlags: ["important", "big"] as EntityFlags[],
+        entityFlags: ["important", "big", "undying"] as EntityFlags[],
         strength: 20,
         unseenSounds: ["You hear the sound of wailing!", "A cold chill runs through your bones!", "Screaming echos through the halls!"] as string[],
         seenSounds: ["The spectre howls!", "The ghostly sounds echo in your mind!", "The ghost lets out a wretched wail!"] as string[],
@@ -60,6 +60,42 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 acts: true,
                 actPeriod: 5000,
                 actionTypes:["open"]
+            })
+        case "red door":
+            return new Entity({
+                name: "red door",
+                sprite: Sprite.from("tiles/redDoor.png"),
+                mapHandler: mapHandler,
+                blocksVision: true,
+                ...position,
+                acts: true,
+                actPeriod: 5000,
+                actionTypes:["unlock"],
+                needsKey: "red key",
+            })
+        case "blue door":
+            return new Entity({
+                name: "blue door",
+                sprite: Sprite.from("tiles/blueDoor.png"),
+                mapHandler: mapHandler,
+                blocksVision: true,
+                ...position,
+                acts: true,
+                actPeriod: 5000,
+                actionTypes:["unlock"],
+                needsKey: "blue key",
+            })
+        case "yellow door":
+            return new Entity({
+                name: "yellow door",
+                sprite: Sprite.from("tiles/yellowDoor.png"),
+                mapHandler: mapHandler,
+                blocksVision: true,
+                ...position,
+                acts: true,
+                actPeriod: 5000,
+                actionTypes:["unlock"],
+                needsKey: "yellow key",
             })
     }
     return null;
@@ -92,7 +128,7 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 durabilityRate: 0,
                 useAction: {
                     type: "heal",
-                    quantity: 25
+                    value: 25
                 }
             });
         case "medkit":
@@ -103,12 +139,31 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 name: "first aid kit",
                 equippable: false,
                 strength: 0,
-                attackString: "slash",
+                attackString: "no",
                 durability: 1,
                 durabilityRate: 0,
                 useAction: {
                     type: "heal",
-                    quantity: 50
+                    value: 50
+                }
+            });
+        case "yellow key":
+        case "blue key":
+        case "red key":
+            const spritePath = `${typeName.split(' ')[0]}Key.png`;
+            return new Item({
+                sprite: Sprite.from(`sprites/${spritePath}`),
+                mapHandler: mapHandler,
+                ...position,
+                name: typeName,
+                equippable: false,
+                strength: 0,
+                attackString: "no",
+                durability: 1,
+                durabilityRate: 0,
+                useAction: {
+                    type: "key",
+                    value: typeName
                 }
             });
     }

@@ -10,6 +10,10 @@ const tileList = [
     "testFloor",
     "testWall",
     "testDoor",
+    "redDoor",
+    "yellowDoor",
+    "blueDoor",
+    "stairsDown",
 ]
 
 const spritePrefix = "sprites/";
@@ -20,6 +24,9 @@ const spriteList = [
     "testSword",
     "bandaid",
     "medkit",
+    "yellowKey",
+    "blueKey",
+    "redKey",
 ]
 
 const decorationsPrefix = "decoration/";

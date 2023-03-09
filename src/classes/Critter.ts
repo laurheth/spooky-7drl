@@ -58,6 +58,7 @@ class Critter extends Entity {
     }
 
     act() {
+        super.act();
         if (!this.active) {
             return;
         }
