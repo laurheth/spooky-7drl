@@ -201,7 +201,7 @@ class Item {
                         boomSprite.width = this.mapHandler.tileScale;
                         boomSprite.height = this.mapHandler.tileScale;
                         boomSprite.tint = 0xFFFF00;
-                        currentTile.addDecoration(boomSprite);
+                        currentTile.addDecoration(boomSprite, true);
                         fireMap.set(boomSprite, 0);
                     } else {
                         const toAdd:string[] = [];
@@ -218,7 +218,7 @@ class Item {
                                         boomSprite.width = this.mapHandler.tileScale;
                                         boomSprite.height = this.mapHandler.tileScale;
                                         boomSprite.tint = 0xFFFF00;
-                                        newTile.addDecoration(boomSprite);
+                                        newTile.addDecoration(boomSprite, true);
                                         fireMap.set(boomSprite, 0);
                                     }
                                 }

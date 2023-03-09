@@ -10,8 +10,8 @@ export type CritterAction = "randomStep" | "walkToTarget" | "pathToTarget" | "pa
 
 export const critterTypes = {
     testCritter: {
-        name: "the test critter",
-        spriteName: "sprites/testCritter.png",
+        name: "the possessed chair",
+        spriteName: "sprites/murderChair.png",
         hp: 50,
         actPeriod: 600,
         movePeriod: 200,
@@ -22,13 +22,13 @@ export const critterTypes = {
         actionTypes: ["violence"] as ActionTypes[],
         entityFlags: [] as EntityFlags[],
         strength: 10,
-        unseenSounds: [] as string[],
+        unseenSounds: ["You hear the sound of wood scraping on the floor."] as string[],
         seenSounds: [] as string[],
         volume: 1,
     },
     bigBad: {
-        name: "the Undying Spirit of Friday",
-        spriteName: "sprites/testBigCritter.png",
+        name: "the Sofa of Eternity",
+        spriteName: "sprites/sofaBeast.png",
         hp: 100,
         actPeriod: 400,
         movePeriod: 400,
@@ -39,8 +39,8 @@ export const critterTypes = {
         actionTypes: ["violence"] as ActionTypes[],
         entityFlags: ["important", "big", "undying"] as EntityFlags[],
         strength: 20,
-        unseenSounds: ["You hear the sound of wailing!", "A cold chill runs through your bones!", "Screaming echos through the halls!"] as string[],
-        seenSounds: ["The spectre howls!", "The ghostly sounds echo in your mind!", "The ghost lets out a wretched wail!"] as string[],
+        unseenSounds: ["You hear a horrible howling sound!", "A cold chill runs through your bones!", "The sounds of a thousand tiny footsteps echo through the halls!", "You hear the sound of creaking wood!"] as string[],
+        seenSounds: ["The Sofa of Eternity howls!", "The Sofa Beast beckons you!", "The cushions rise and a horrible tongue slurps!", "The Sofa's thousand feet scamper furiously!"] as string[],
         volume: 4,
     }
 };
@@ -73,6 +73,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 acts: true,
                 actPeriod: 5000,
                 actionTypes:["unlock"],
+                hp: 1,
                 needsKey: "red key",
                 removeOnDeath: true,
             })
@@ -86,6 +87,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 acts: true,
                 actPeriod: 5000,
                 actionTypes:["unlock"],
+                hp: 1,
                 needsKey: "blue key",
                 removeOnDeath: true,
             })
@@ -99,6 +101,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 acts: true,
                 actPeriod: 5000,
                 actionTypes:["unlock"],
+                hp: 1,
                 needsKey: "yellow key",
                 removeOnDeath: true,
             })
@@ -165,7 +168,7 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 durabilityRate: 0,
                 useAction: {
                     type: "bomb",
-                    value: "40,8,4000"
+                    value: "50,8,3100"
                 },
                 alternateSprite: Sprite.from("sprites/bombLit.png")
             });

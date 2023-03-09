@@ -20,6 +20,8 @@ const spritePrefix = "sprites/";
 const spriteList = [
     "testFace",
     "testCritter",
+    "murderChair",
+    "sofaBeast",
     "testBigCritter",
     "testSword",
     "bandaid",
