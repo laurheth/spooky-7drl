@@ -30,6 +30,10 @@ class Critter extends Entity {
     previousStep:number[] = [0, 0];
     team:number = 1;
     path:number[][] = [];
+    unseenSounds:string[];
+    seenSounds:string[];
+    volume:number;
+    soundDelay:number = 0;
     constructor({critterType, ...rest}:CritterParams) {
         const critterDetails = critterTypes[critterType];
         super({
@@ -48,6 +52,9 @@ class Critter extends Entity {
         this.actionTypes = critterDetails.actionTypes ? critterDetails.actionTypes : ["violence"];
         this.entityFlags = critterDetails.entityFlags ? critterDetails.entityFlags : [];
         this.strength = critterDetails.strength ? critterDetails.strength : 1;
+        this.volume = critterDetails.volume ? critterDetails.volume : 1;
+        this.unseenSounds = critterDetails.unseenSounds ? critterDetails.unseenSounds : [];
+        this.seenSounds = critterDetails.seenSounds ? critterDetails.seenSounds : [];
     }
 
     act() {
@@ -71,6 +78,24 @@ class Critter extends Entity {
             }
             this.task = action;
             this[action](this.target);
+        }
+        // Make some noise
+        if (this.soundDelay < 0) {
+            this.mapHandler.sound(
+                {
+                    x: this.x,
+                    y: this.y
+                },
+                {
+                    seen: randomElement(this.seenSounds),
+                    unseen: randomElement(this.unseenSounds)
+                },
+                this.volume,
+                false
+            );
+            this.soundDelay = 5 + 10*Math.random();
+        } else {
+            this.soundDelay--;
         }
     }
 

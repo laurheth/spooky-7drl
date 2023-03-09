@@ -1,6 +1,13 @@
 import { Sprite } from "pixi.js"
 import MapHandler from "./MapHandler"
 import Tile from "./Tile"
+import Player from "./Player"
+import Logger from "./Logger"
+
+interface UseAction {
+    type: "heal";
+    quantity: number;
+}
 
 export interface ItemParams {
     sprite: Sprite;
@@ -14,6 +21,7 @@ export interface ItemParams {
     attackString: string;
     durability: number;
     durabilityRate: number;
+    useAction?: UseAction;
 }
 
 /**
@@ -32,7 +40,8 @@ class Item {
     attackString: string;
     durability: number;
     durabilityRate: number;
-    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate}:ItemParams) {
+    useAction: UseAction;
+    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate, useAction}:ItemParams) {
         this.mapHandler = mapHandler;
         this.sprite = sprite;
         this.sprite.zIndex = -1;
@@ -44,6 +53,7 @@ class Item {
         this.strength = strength;
         this.durability = durability;
         this.durabilityRate = durabilityRate;
+        this.useAction = useAction;
         this.findValidSpotAndPlaceSelf(x, y, z);
     }
 
@@ -98,6 +108,21 @@ class Item {
         if (this.durabilityRate < Math.random()) {
             this.durability--;
             return true;
+        }
+        return false;
+    }
+
+    // Use the item!
+    use(player:Player):boolean {
+        if (this.useAction.type === "heal") {
+            if (player.hp < player.maxHp) {
+                player.damage(-this.useAction.quantity);
+                Logger.getInstance().sendMessage("You feel healthier.");
+                return true;
+            } else {
+                Logger.getInstance().sendMessage("You are already fully healed!");
+                return false;
+            }
         }
         return false;
     }

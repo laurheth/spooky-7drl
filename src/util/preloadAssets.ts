@@ -18,6 +18,8 @@ const spriteList = [
     "testCritter",
     "testBigCritter",
     "testSword",
+    "bandaid",
+    "medkit",
 ]
 
 const decorationsPrefix = "decoration/";

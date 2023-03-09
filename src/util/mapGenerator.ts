@@ -33,7 +33,7 @@ interface CritterData {
 }
 
 interface ItemData {
-    name: "sword";
+    name: "sword" | "bandaid" | "medkit";
     key: string;
 }
 
@@ -231,9 +231,17 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
 
     // Add some items
     const items:ItemData[] = [];
-    for (let i=0; i<20; i++) {
+    for (let i=0; i<3; i++) {
         items.push({
             name: "sword",
+            key: randomElement(entitySpots),
+        })
+        items.push({
+            name: "bandaid",
+            key: randomElement(entitySpots),
+        })
+        items.push({
+            name: "medkit",
             key: randomElement(entitySpots),
         })
     }

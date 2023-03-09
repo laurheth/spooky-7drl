@@ -243,7 +243,7 @@ class MapHandler {
         const player = Game.getInstance().player;
         if (player) {
             const playerDistance = Math.max(Math.abs(player.x - position.x),Math.abs(player.y - position.y));
-            if (playerDistance < 3*volume && Math.random() < volume / playerDistance) {
+            if (playerDistance < Math.min(10, 3 * volume) && Math.random() < volume / playerDistance) {
                 const tile = this.getTile(position.x, position.y, 1);
                 if (tile && tile.visible) {
                     if (seen) {

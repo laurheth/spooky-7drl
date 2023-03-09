@@ -119,7 +119,10 @@ class Player extends Entity {
         if (index < this.inventory.length) {
             const item = this.inventory[index];
             if (item) {
-                // TODO
+                if (item.use(this)) {;
+                    this.inventory.splice(index, 1);
+                    UI.getInstance().updateInventory(this);
+                }
             }
         }
     }

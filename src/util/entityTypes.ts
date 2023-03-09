@@ -22,6 +22,9 @@ export const critterTypes = {
         actionTypes: ["violence"] as ActionTypes[],
         entityFlags: [] as EntityFlags[],
         strength: 10,
+        unseenSounds: [] as string[],
+        seenSounds: [] as string[],
+        volume: 1,
     },
     bigBad: {
         name: "the Undying Spirit of Friday",
@@ -36,6 +39,9 @@ export const critterTypes = {
         actionTypes: ["violence"] as ActionTypes[],
         entityFlags: ["important", "big"] as EntityFlags[],
         strength: 20,
+        unseenSounds: ["You hear the sound of wailing!", "A cold chill runs through your bones!", "Screaming echos through the halls!"] as string[],
+        seenSounds: ["The spectre howls!", "The ghostly sounds echo in your mind!", "The ghost lets out a wretched wail!"] as string[],
+        volume: 4,
     }
 };
 
@@ -72,6 +78,38 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 attackString: "slash",
                 durability: 5 + 10 * Math.random(),
                 durabilityRate: 0.5,
-            })
+            });
+        case "bandaid":
+            return new Item({
+                sprite: Sprite.from("sprites/bandaid.png"),
+                mapHandler: mapHandler,
+                ...position,
+                name: "bandage",
+                equippable: false,
+                strength: 0,
+                attackString: "slash",
+                durability: 1,
+                durabilityRate: 0,
+                useAction: {
+                    type: "heal",
+                    quantity: 25
+                }
+            });
+        case "medkit":
+            return new Item({
+                sprite: Sprite.from("sprites/medkit.png"),
+                mapHandler: mapHandler,
+                ...position,
+                name: "first aid kit",
+                equippable: false,
+                strength: 0,
+                attackString: "slash",
+                durability: 1,
+                durabilityRate: 0,
+                useAction: {
+                    type: "heal",
+                    quantity: 50
+                }
+            });
     }
 }
