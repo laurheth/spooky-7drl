@@ -8,7 +8,7 @@ import preloadAssets from "./util/preloadAssets"
 async function init() {
     await preloadAssets();
     const game = Game.getInstance();
-    game.newMap();
+    game.newMap(1,true);
     UI.getInstance();
 }
 

@@ -91,6 +91,13 @@ class Player extends Entity {
                             Logger.getInstance().sendMessage("There is nothing here to pick up.");
                         }
                         break;
+                    case "<": // My memory is terrible. Which one is down again? No up stairs so just get both lol
+                    case ">": // Descend
+                        if (this.currentTile && this.currentTile.levelExit) {
+                            Logger.getInstance().sendMessage("You descend further into darkness...", {important:true, tone:"good"});
+                            Game.getInstance().nextLevel();
+                        }
+                        break;
                 }
                 if (turnDone) {
                     this.clock = 0;
@@ -155,8 +162,13 @@ class Player extends Entity {
 
     moveTo(x:number, y:number, z:number, immediate = false): boolean {
         const success = super.moveTo(x, y, z, immediate);
-        if (success && this.currentTile && this.currentTile.item) {
-            Logger.getInstance().sendMessage(`You see at your feet at ${this.currentTile.item.name}.`);
+        if (success && this.currentTile) {
+            if (this.currentTile.item) {
+                Logger.getInstance().sendMessage(`You see at your feet at ${this.currentTile.item.name}.`);
+            }
+            if (this.currentTile.levelExit) {
+                Logger.getInstance().sendMessage(`You found staircase, descending into darkness below...`, {tone:"good", important:true});
+            }
         }
         this.updateVisionDelay = this.actPeriod / 2;
         this.mapHandler.recenter(this);

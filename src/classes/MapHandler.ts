@@ -18,6 +18,7 @@ interface MapHandlerParams {
 
 interface NewMapParams {
     level: number;
+    fresh?: boolean;
 }
 
 /**
@@ -62,11 +63,33 @@ class MapHandler {
         });
     }
 
-    // Generate a new map!
-    generateNewMap({level}:NewMapParams) {
+    // Remove the current map and reset all important values.
+    clearOldMap() {
         // Clear the old tiles
         this.tileContainer.removeChildren();
         this.tileMap.clear();
+
+        // If the player exists, preserve their sprite
+        if (Game.getInstance().player) {
+            this.spriteContainer.removeChild(Game.getInstance().player.sprite);
+        }
+        // Clear old sprites
+        this.spriteContainer.removeChildren();
+
+        // Clear actors list
+        this.actors = [];
+
+        // Clear room locations
+        this.roomCenters = [];
+    }
+
+    // Generate a new map!
+    generateNewMap({level, fresh}:NewMapParams) {
+        // Totally fresh game. Which means: ditch the existing Player
+        if (fresh) {
+            Game.getInstance().player = null;
+        }
+        this.clearOldMap()
 
         const generatedMap = mapGenerator();
         
@@ -126,14 +149,21 @@ class MapHandler {
         const [px, py] = generatedMap.playerStart.split(',').map(x => parseInt(x));
 
         // Add in the player
-        const player = new Player({
-            name: "you",
-            sprite: Sprite.from("sprites/testFace.png"),
-            x: px,
-            y: py,
-            z: 1,
-            mapHandler: this
-        });
+        if (Game.getInstance().player) {
+            // Put the player sprite back where it should be.
+            this.spriteContainer.addChild(Game.getInstance().player.sprite);
+            Game.getInstance().player.moveTo(px, py, 1, true);
+            this.actors.push(Game.getInstance().player);
+        } else {
+            const player = new Player({
+                name: "you",
+                sprite: Sprite.from("sprites/testFace.png"),
+                x: px,
+                y: py,
+                z: 1,
+                mapHandler: this
+            });
+        }
 
         // Add non-interactable decorations
         generatedMap.decorations.forEach(decoration => {
@@ -206,20 +236,6 @@ class MapHandler {
     removeActor(actor:Entity) {
         const index = this.actors.indexOf(actor);
         this.actors.splice(index, 1);
-    }
-
-    // Kick the actors into motion
-    async startActing() {
-        if (!this.active) {
-            this.active = true;
-            while (this.active) {
-                const actor = this.actors.shift();
-                if (actor) {
-                    this.actors.push(actor);
-                    await actor.act();
-                }
-            }
-        }
     }
 
     // Update vision

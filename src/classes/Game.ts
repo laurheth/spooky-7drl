@@ -25,6 +25,8 @@ class Game {
 
     ticker: Ticker;
 
+    currentLevel: number = 0;
+
     init() {
         // Initialize the Pixi application.
         this.pixiApp = new Application({
@@ -80,8 +82,14 @@ class Game {
     }
 
     // Start a new map
-    newMap() {
-        this.mapHandler.generateNewMap({level: 1});
+    newMap(level:number = 1, fresh:boolean=false) {
+        this.currentLevel = level;
+        this.mapHandler.generateNewMap({level: level});
+    }
+
+    // Go to the next level
+    nextLevel() {
+        this.newMap(this.currentLevel + 1);
     }
 
     // Input handler. Pass it to the player entity.
