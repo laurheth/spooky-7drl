@@ -1,4 +1,4 @@
-import { Application, SCALE_MODES, Container, BaseTexture, Ticker } from "pixi.js"
+import { Application, SCALE_MODES, Container, BaseTexture, Ticker, Sprite, Texture, BLEND_MODES } from "pixi.js"
 import MapHandler from "./MapHandler"
 import Player from "./Player"
 import UI from "./UI"
@@ -18,6 +18,11 @@ class Game {
 
     // Sprite container. Entities / items / etc will go in here.
     spriteContainer: Container;
+
+    // Container to hold anything that gets drawn on top of everything else
+    overlayContainer: Container;
+    // Use this to put a solid color over the entire screen
+    overlayColor: Sprite;
 
     mapHandler: MapHandler;
 
@@ -46,8 +51,16 @@ class Game {
         // Setup containers
         this.tileContainer = new Container();
         this.spriteContainer = new Container();
+        this.spriteContainer.sortableChildren = true;
         this.pixiApp.stage.addChild(this.tileContainer);
         this.pixiApp.stage.addChild(this.spriteContainer);
+
+        // Prepare the overlay
+        this.overlayContainer = new Container();
+        this.pixiApp.stage.addChild(this.overlayContainer);
+        this.overlayColor = Sprite.from(Texture.WHITE);
+        this.overlayContainer.addChild(this.overlayColor);
+        this.overlayColor.blendMode = BLEND_MODES.MULTIPLY;
 
         // Setup the map handler
         this.mapHandler = new MapHandler({
@@ -78,6 +91,8 @@ class Game {
         this.pixiApp.view.width = this.appRoot.clientWidth;
         this.pixiApp.view.height = this.appRoot.clientHeight;
         this.pixiApp.renderer.resize(this.appRoot.clientWidth, this.appRoot.clientHeight);
+        this.overlayColor.width = this.appRoot.clientWidth;
+        this.overlayColor.height = this.appRoot.clientHeight;
         this.mapHandler.recenter();
     }
 

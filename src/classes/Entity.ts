@@ -54,8 +54,12 @@ class Entity {
     actionQueue: (()=>boolean)[] = [];
     needsKey: string;
     pathBlocking: boolean;
+    spriteForDamageTinting: Sprite;
+    damageTintAmount: number = 0;
+    baseTint: number = 0xFFFFFF;
     constructor({sprite, mapHandler, x, y, z, hp=Infinity, acts=false, blocksVision=false, actionTypes=[], entityFlags=[], actPeriod=1000, movePeriod, name, strength=0, needsKey}:EntityParams) {
         this.sprite = sprite;
+        this.spriteForDamageTinting = sprite;
         this.mapHandler = mapHandler;
         if (acts) {
             this.mapHandler.addActor(this);
@@ -251,6 +255,12 @@ class Entity {
     }
 
     tick(deltaMS:number) {
+        if (this.damageTintAmount > 0) {
+            this.updateTint();
+            if (this.active) {
+                this.damageTintAmount = Math.max(0, this.damageTintAmount - deltaMS / 1000);
+            }
+        }
         this.clock += deltaMS;
         if (this.spriteMoving) {
             this.moveSprite(deltaMS);
@@ -287,20 +297,24 @@ class Entity {
     damage(damage:number, attacker:Entity = null) {
         this.hp -= damage;
         if (this.hp <= 0) {
+            this.damageTintAmount = 1;
             this.die();
         } else if (this.hp > this.maxHp) {
             this.hp = this.maxHp;
+        } else if (damage > 0) {
+            this.damageTintAmount = Math.min(1, damage / this.hp);
         }
     }
 
     die() {
         this.active = false;
+        this.sprite.zIndex = -1;
+        this.mapHandler.spriteContainer.sortChildren();
         let rememberTile: Tile;
         if (this.currentTile) {
             rememberTile = this.currentTile;
             // Remove self from previous tile
             this.currentTile.entity = null;
-            this.currentTile = null;
         }
         if (this.entityFlags.includes("undying")) {
             Logger.getInstance().sendMessage(`The ${this.name} was stunned!`, {tone:"good"});
@@ -311,6 +325,8 @@ class Entity {
                 if (rememberTile.visible) {
                     Logger.getInstance().sendMessage(`The ${this.name} has regained their strength!`, {tone:"bad"});
                 }
+                this.sprite.zIndex = 0;
+                this.mapHandler.spriteContainer.sortChildren();
                 this.moveTo(this.x, this.y, this.z);
                 return true;
             });
@@ -323,14 +339,26 @@ class Entity {
         }
     }
 
+    updateTint() {
+        const damagetint = utils.rgb2hex([1, 1 - this.damageTintAmount, 1 - this.damageTintAmount]);
+        if (this.sprite === this.spriteForDamageTinting) {
+            this.sprite.tint = damagetint & this.baseTint;
+        } else {
+            this.sprite.tint = this.baseTint;
+            this.spriteForDamageTinting.tint = damagetint;
+        }
+    }
+
     setVisibility(light:number) {
         if (light > 0) {
             const clampedLight = Math.max(Math.min(light, 1), 0);
-            const tint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
-            this.sprite.tint = tint;
+            this.baseTint = utils.rgb2hex([clampedLight, clampedLight, clampedLight]);
+            this.updateTint();
             this.sprite.visible = true;
+            this.spriteForDamageTinting.visible = true;
         } else {
             this.sprite.visible = false;
+            this.spriteForDamageTinting.visible = false;
         }
     }
 }

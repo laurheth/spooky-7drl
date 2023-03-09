@@ -30,6 +30,9 @@ class Player extends Entity {
 
     team:number = 2;
 
+    totalTime:number = 0;
+    heartbeatFactor:number = 0.5;
+
     constructor(params: PlayerParams) {
         params.acts = true;
         params.actPeriod = 200;
@@ -38,6 +41,7 @@ class Player extends Entity {
         params.entityFlags = ["important"];
         params.strength = 5;
         super(params);
+        this.spriteForDamageTinting = Game.getInstance().overlayColor;
         Game.getInstance().player = this;
         UI.getInstance().updateInventory(this);
     }
@@ -182,6 +186,11 @@ class Player extends Entity {
 
     tick(deltaMS: number): void {
         super.tick(deltaMS);
+        this.totalTime += deltaMS;
+        if (this.hp < 20) {
+            const base = 1 - Math.max(0, this.hp / 20);
+            this.damageTintAmount = Math.max(this.damageTintAmount, base * Math.sin(this.heartbeatFactor * this.totalTime));
+        }
         if (this.updateVisionDelay >= 0) {
             this.updateVisionDelay -= deltaMS;
             if (this.updateVisionDelay < 0) {
