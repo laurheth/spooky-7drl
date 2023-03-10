@@ -145,7 +145,7 @@ class Critter extends Entity {
         if (currentAwakeState > 0 && awareAmount < 0) {
             awareAmount = -awareAmount;
         }
-        if (Math.random() < awareAmount * (manualLight ? manualLight : this.currentTile.light)) {
+        if (Math.random() < awareAmount * (manualLight ? manualLight : Math.max(0,this.currentTile.light))) {
             this.awake = this.persistence;
             if (manualTarget) {
                 this.target = {...manualTarget};

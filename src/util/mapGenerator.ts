@@ -58,7 +58,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     const entitySpots:string[] = [];
     let maxY = 0;
     const floor = 0;
-    const mapWidth = Math.ceil(maxRoomSize * Math.sqrt(targetRoomCount));
+    const mapWidth = Math.ceil(2 * maxRoomSize * Math.sqrt(targetRoomCount));
 
     // Use a "drop" algorithm to fill in the rooms
     for(let roomCount = 0; roomCount < targetRoomCount; roomCount++) {
@@ -84,7 +84,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
 
         // Compute room center
         const roomCenter = [Math.floor(x + width / 2), Math.floor(y + height / 2)];
-        roomConnectionTracker.push([]);
+        roomConnectionTracker.push([roomCount]);
 
         // Build the room
         let floors = 0;
@@ -127,28 +127,60 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     const pathfinder = new Pathfinder(([dx, dy])=>{
         return Math.abs(dx) + Math.abs(dy)
     }, ([x, y]) => {
-        const options = [[-1,0],[1,0],[0,1],[0,-1]];
+        const options = [[0,1],[0,-1],[-1,0],[1,0]];
         return options.filter(option => {
             const optionKey:string = `${x+option[0]},${y+option[1]}`;
             return !map.has(optionKey) || map.get(optionKey).roomId < 0 || currentPathingIds.includes(map.get(optionKey).roomId);
         }).map(option => [option[0] + x, option[1] + y]);
-    }, ([x,y]) => 1);
+    }, ([x,y]) => {
+        const key = `${x},${y}`;
+        if (map.has(key)) {
+            const tile = map.get(key);
+            if (tile.roomId >= 0 && tile.type === '#') {
+                return 5;
+            } else {
+                return 1;
+            }
+        }
+        return 1;
+    });
+
+    // Sometimes things are detached. Check for that.
+    const checkConnectivity = () => {
+        const connectedSet = new Set<number>();
+        const toCheck = [0];
+        while (toCheck.length > 0) {
+            const id = toCheck.pop();
+            connectedSet.add(id);
+            roomConnectionTracker[id].forEach(otherId => {
+                if (!connectedSet.has(otherId) && !toCheck.includes(otherId)) {
+                    toCheck.push(otherId);
+                }
+            })
+        }
+        return connectedSet.size >= rooms.length;
+    }
 
     // Lets get er done
     const neededWalls = new Set<string>();
     const possibleDoors = new Set<string>();
-    rooms.forEach((roomData, index) => {
+    let loopIndex = 0;
+    while (loopIndex < rooms.length || !checkConnectivity()) {
+        const index = loopIndex % rooms.length;
+        const roomData = rooms[index];
         const roomCenter = roomData.center;
         const options = rooms.map((x,i) => i).filter(otherIndex => !roomConnectionTracker[index].includes(otherIndex));
         options.sort((indexA, indexB) => {
             const roomA:number[] = rooms[indexA].center;
             const roomB:number[] = rooms[indexB].center;
-            return (Math.abs(roomA[0] - roomCenter[0]) + Math.abs(roomA[1] - roomCenter[1]) - Math.abs(roomB[0] - roomCenter[0]) + Math.abs(roomB[1] - roomCenter[1]))
+            const distA = Math.abs(roomA[0] - roomCenter[0]) + Math.abs(roomA[1] - roomCenter[1]);
+            const distB = Math.abs(roomB[0] - roomCenter[0]) + Math.abs(roomB[1] - roomCenter[1]);
+            return distA - distB;
         });
 
         const connections = Math.min((multipleConnectionChance > Math.random()) ? 2 : 1, options.length - 1);
         for (let i=0; i<connections; i++) {
-            const otherIndex = options[i+1];
+            const otherIndex = options[i];
             const otherCenter = rooms[otherIndex].center;
             currentPathingIds = [index, otherIndex];
             const path = pathfinder.findPath(roomCenter, otherCenter);
@@ -179,7 +211,8 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
                 }
             });
         }
-    });
+        loopIndex++;
+    };
 
     // Add extra walls where we need them
     neededWalls.forEach(key => {
@@ -374,6 +407,43 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
             key: randomElement(entitySpots, true)
         })
     }
+
+    // Print for debugging
+    // Remove before release.
+    let xBounds = [0,0];
+    let yBounds = [0,0];
+    map.forEach((plan,key) => {
+        const [dx, dy] = key.split(',').map(x=>parseInt(x));
+        xBounds[0] = Math.min(xBounds[0], dx - 2);
+        xBounds[1] = Math.max(xBounds[1], dx + 2);
+        yBounds[0] = Math.min(yBounds[0], dy - 2);
+        yBounds[1] = Math.max(yBounds[1], dy + 2);
+    })
+    rooms.forEach(room => {
+        xBounds[0] = Math.min(xBounds[0], room.xBounds[0] + 2);
+        xBounds[1] = Math.max(xBounds[1], room.xBounds[1] + 2);
+        yBounds[0] = Math.min(yBounds[0], room.yBounds[0] + 2);
+        yBounds[1] = Math.max(yBounds[1], room.yBounds[1] + 2);
+    });
+    let minCorner = [xBounds[0], yBounds[0]];
+    const arrVersion:string[][] = Array(yBounds[1] - yBounds[0]).fill("").map(()=>Array(xBounds[1] - xBounds[0]).fill(" "));
+    map.forEach((plan, key) => {
+        const [dx, dy] = key.split(',').map(x=>parseInt(x));
+        const [x, y] = [dx - minCorner[0], dy - minCorner[1]];
+        arrVersion[y][x] = plan.type.length === 1 ? plan.type : '+';
+    });
+    const nums = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E'];
+    rooms.forEach((room,i) => {
+        const [x, y] = room.center;
+        arrVersion[y - minCorner[1]][x - minCorner[0]] = nums[i];
+    })
+
+    let toPrint = "";
+    arrVersion.forEach(row => {
+        let rowString = row.join("") + '\n';
+        toPrint += rowString;
+    })
+    console.log(toPrint);
 
     return {
         map: map,
