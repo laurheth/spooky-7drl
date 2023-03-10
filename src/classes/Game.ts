@@ -39,7 +39,8 @@ class Game {
         this.pixiApp = new Application({
             backgroundColor: 0x000000,
             autoDensity: true,
-            resolution: devicePixelRatio
+            resolution: devicePixelRatio,
+            antialias: false
         });
 
         // Add the Pixi app to the page

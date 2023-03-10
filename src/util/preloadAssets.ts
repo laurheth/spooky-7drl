@@ -6,52 +6,52 @@ import { Assets } from "pixi.js";
 const assetPrefix = "";
 
 const tilePrefix = "tiles/";
-const tileList = [
-    "testFloor",
-    "testWall",
-    "testDoor",
-    "redDoor",
-    "yellowDoor",
-    "blueDoor",
-    "stairsDown",
-    "badBricks",
-    "badConcrete",
+const tileList:string[] = [
+    // "testFloor",
+    // "testWall",
+    // "testDoor",
+    // "redDoor",
+    // "yellowDoor",
+    // "blueDoor",
+    // "stairsDown",
+    // "badBricks",
+    // "badConcrete",
 ]
 
 const spritePrefix = "sprites/";
-const spriteList = [
-    "murderChair",
-    "rollyChair",
-    "sofaBeast",
-    "testSword",
-    "bandaid",
-    "medkit",
-    "yellowKey",
-    "blueKey",
-    "redKey",
-    "bomb",
-    "bombLit",
-    "box",
-    "bookShelf",
-    "cabinet",
-    "alanWrench",
-    "chainsaw",
-    "hammer",
-    "hero",
-    "lamp",
-    "demonLamp",
-    "tv",
-    "exit1",
-    "exit2",
-    "exit3",
-    "kallax",
-    "fireball",
-    "healer",
+const spriteList:string[] = [
+    // "murderChair",
+    // "rollyChair",
+    // "sofaBeast",
+    // "testSword",
+    // "bandaid",
+    // "medkit",
+    // "yellowKey",
+    // "blueKey",
+    // "redKey",
+    // "bomb",
+    // "bombLit",
+    // "box",
+    // "bookShelf",
+    // "cabinet",
+    // "alanWrench",
+    // "chainsaw",
+    // "hammer",
+    // "hero",
+    // "lamp",
+    // "demonLamp",
+    // "tv",
+    // "exit1",
+    // "exit2",
+    // "exit3",
+    // "kallax",
+    // "fireball",
+    // "healer",
 ]
 
 const decorationsPrefix = "decoration/";
-const decorationList = [
-    "bloodPool",
+const decorationList:string[] = [
+    // "bloodPool",
 ]
 
 const suffix = ".png";
@@ -71,6 +71,7 @@ async function preloadAssets() {
     for (const decoration of decorationList) {
         await Assets.load(`${assetPrefix}${decorationsPrefix}${decoration}${suffix}`);
     }
+    await Assets.load("spriteSheet.json");
 }
 
 export default preloadAssets;
