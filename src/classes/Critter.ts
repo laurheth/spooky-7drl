@@ -3,7 +3,7 @@ import Entity from "./Entity"
 import Player from "./Player"
 import Game from "./Game"
 import MapHandler from "./MapHandler"
-import { critterTypes, CritterAction, objectFactory } from "../util/entityTypes"
+import { critterTypes, CritterAction, objectFactory, itemFactory } from "../util/entityTypes"
 import { randomElement } from "../util/randomness";
 import Logger from "./Logger"
 
@@ -37,6 +37,7 @@ class Critter extends Entity {
     volume:number;
     soundDelay:number = 0;
     corpseObject:string;
+    dropItem:string;
     awakeSprite:string;
     sleepSprite:string;
     currentSprite:string;
@@ -68,6 +69,10 @@ class Critter extends Entity {
 
         if (critterDetails.corpseObject) {
             this.corpseObject = critterDetails.corpseObject;
+            this.removeOnDeath = true;
+        }
+        if (critterDetails.dropItem) {
+            this.dropItem = critterDetails.dropItem;
             this.removeOnDeath = true;
         }
         if (critterDetails.awakeSpriteName) {
@@ -140,6 +145,13 @@ class Critter extends Entity {
                 z: this.z
             }, this.corpseObject, this.mapHandler);
         }
+        if (this.dropItem) {
+            itemFactory({
+                x: this.x,
+                y: this.y,
+                z: this.z
+            }, this.dropItem, this.mapHandler);
+        }
     }
 
     // Can we detect the player?
@@ -203,6 +215,84 @@ class Critter extends Entity {
         super.damage(damage, attacker);
         if (this.awake < 0) {
             this.observe(100);
+        }
+    }
+
+    // Skedaddle, we are not a fighty critter
+    runFromTarget(target:{x:number, y:number}) {
+        if (target) {
+            const distance = [target.x - this.x, target.y - this.x];
+            // Fight if we must
+            if (Math.abs(distance[0]) + Math.abs(distance[1]) <= 1) {
+                this.walkToTarget(target);
+            } else {
+                // Otherwise, run
+                let [dx, dy] = [0,0];
+                let lowestLight = Infinity;
+                [[-1,0],[1,0],[0,-1],[0,1]].forEach(([ddx, ddy])=>{
+                    const tile = this.mapHandler.getTile(this.x + ddx, this.y + ddy, this.z);
+                    if (tile && tile.passable && tile.light) {
+                        if (tile.light < lowestLight) {
+                            lowestLight = tile.light;
+                            dx = ddx;
+                            dy = ddy;
+                        }
+                    }
+                });
+                if (!this.step(dx, dy, 0)) {
+                    this.walkToTarget(target);
+                }
+            }
+        }
+    }
+
+    // Find a friend who needs help and help them
+    healFriends() {
+        const deadFriends = this.mapHandler.actors.filter(actor => {
+            if (actor instanceof Critter) {
+                if (!actor.active && !actor.entityFlags.includes("undying")) {
+                    if (actor.currentTile && actor.currentTile.passable) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }) as Critter[];
+        deadFriends.sort((friendA, friendB) => {
+            const distA = Math.abs(friendA.x - this.x) + Math.abs(friendA.y - this.y);
+            const distB = Math.abs(friendB.x - this.x) + Math.abs(friendB.y - this.y);
+            return distA - distB;
+        });
+
+        const deadFriend = deadFriends.length > 0 ? deadFriends[0] : null;
+        
+        // Did we find a friend in need?
+        if (deadFriend && deadFriend.x && deadFriend.y) {
+            this.target = {
+                x: deadFriend.x,
+                y: deadFriend.y
+            }
+        }
+        if (deadFriend && this.target) {
+            const distance = Math.abs(this.target.x - this.x) + Math.abs(this.target.y - this.y);
+            if (distance <= 1) {
+                // We're here! Do a heal.
+                if (Math.random() > 0.5) {
+                    deadFriend.active = true;
+                    deadFriend.hp = Math.min(deadFriend.maxHp, Math.max(40, deadFriend.maxHp / 2));
+                    deadFriend.sprite.zIndex = 0;
+                    deadFriend.mapHandler.spriteContainer.sortChildren();
+                    if (this.currentTile && this.currentTile.visible) {
+                        Logger.getInstance().sendMessage(`${deadFriend.name} has been repaired by ${this.name}!`,{tone:"bad"});
+                    }
+                    this.target = null;
+                }
+            } else {
+                // Not there yet. Go to them!
+                this.pathToTarget(this.target);
+            }
+        } else {
+            this.randomStep();
         }
     }
 

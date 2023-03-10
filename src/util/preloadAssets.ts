@@ -46,6 +46,7 @@ const spriteList = [
     "exit3",
     "kallax",
     "fireball",
+    "healer",
 ]
 
 const decorationsPrefix = "decoration/";

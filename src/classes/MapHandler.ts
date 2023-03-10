@@ -59,7 +59,7 @@ class MapHandler {
         }, ([x,y]) => {
             const key:string = `${x},${y},1`;
             if (this.tileMap.has(key)) {
-                return this.tileMap.get(key).entity ? 2 : 1;
+                return this.tileMap.get(key).entity ? 5 : 1;
             }
             return 1;
         });
@@ -134,7 +134,14 @@ class MapHandler {
             generatedMap = mapGenerator({
                 monsterCount: 15,
                 targetRoomCount: 12,
-                monsterOptions: ["chair", "chair", "lamp","rolly", "kallax", "lamp","tv"],
+                monsterOptions: ["chair", "chair", "lamp","rolly", "kallax","healer"],
+                bonusGoodItems: ["bomb","chainsaw"]
+            });
+        } else if (level === 7) {
+            generatedMap = mapGenerator({
+                monsterCount: 15,
+                targetRoomCount: 12,
+                monsterOptions: ["chair", "chair", "lamp","rolly", "kallax","tv","healer"],
                 bonusGoodItems: ["bomb","chainsaw"]
             });
         } else {
@@ -142,7 +149,7 @@ class MapHandler {
                 monsterCount: 12,
                 targetRoomCount: 12,
                 bonusGoodItems: ["bomb","chainsaw","bomb"],
-                monsterOptions: ["chair", "kallax", "rolly", "lamp", "tv"],
+                monsterOptions: ["chair", "kallax", "rolly", "lamp", "tv", "healer"],
                 includeWinCondition: true,
             });
         }

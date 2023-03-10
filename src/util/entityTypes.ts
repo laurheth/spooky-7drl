@@ -6,13 +6,14 @@ import MapHandler from "../classes/MapHandler"
 /**
  * Data object full of critter types
  */
-export type CritterAction = "randomStep" | "walkToTarget" | "pathToTarget" | "patrol" | "pause" | "pathToHome" | "fireToTarget";
+export type CritterAction = "randomStep" | "walkToTarget" | "pathToTarget" | "patrol" | "pause" | "pathToHome" | "fireToTarget" | "healFriends" | "runFromTarget";
 
 interface CritterDetails {
     name: string;
     spriteName: string;
     awakeSpriteName?: string;
     corpseObject?: string;
+    dropItem?: string;
     hp: number;
     actPeriod: number;
     movePeriod: number;
@@ -99,6 +100,24 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         strength: 5,
         unseenSounds: ["You hear the sound of wood scraping on the floor."] as string[],
         seenSounds: ["You you smell brimstone coming from the kallax!"] as string[],
+        volume: 1,
+    },
+    healer: {
+        name: "the hexed key",
+        spriteName: "sprites/healer.png",
+        hp: 50,
+        actPeriod: 300,
+        movePeriod: 200,
+        idleActions: ["healFriends"] as CritterAction[],
+        activeActions: ["runFromTarget"] as CritterAction[],
+        dropItem: "hex key",
+        awareness: 1,
+        persistence: 10,
+        actionTypes: ["violence"] as ActionTypes[],
+        entityFlags: [] as EntityFlags[],
+        strength: 5,
+        unseenSounds: [] as string[],
+        seenSounds: [] as string[],
         volume: 1,
     },
     chair: {
