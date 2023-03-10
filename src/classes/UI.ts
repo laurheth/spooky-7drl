@@ -5,6 +5,13 @@ import Player from "./Player"
 const fine = 0.66;
 const caution = 0.33
 
+interface SpecialMessageParams {
+    headingText: string;
+    body: string[];
+    button?: string;
+    handler?: ()=>void;
+}
+
 /**
  * Singleton to handle player UI
  */
@@ -17,14 +24,35 @@ export default class UI {
     closeInventoryButton: HTMLButtonElement;
     inventoryList: HTMLUListElement;
     inventory: HTMLDivElement;
+    specialMessageModal: HTMLDivElement;
+    specialMessageHeader: HTMLHeadingElement;
+    specialMessageContent: HTMLDivElement;
+    specialMessageButton: HTMLButtonElement;
+    inventoryOpen:boolean = false;
+    messageOpen:boolean = false;
+
+    specialMessageButtonHandlers:(()=>void)[] = [];
 
     private constructor() {
+        // Player status related elements
         this.status = document.getElementById("status") as HTMLParagraphElement;
         this.holding = document.getElementById("holding") as HTMLParagraphElement;
+
+        // Inventory related elements
         this.openInventoryButton = document.getElementById("openInventory") as HTMLButtonElement;
         this.closeInventoryButton = document.getElementById("closeInventory") as HTMLButtonElement;
         this.inventoryList = document.getElementById("inventoryList") as HTMLUListElement;
         this.inventory = document.getElementById("inventory") as HTMLDivElement;
+
+        // Elements needed for the special message modal
+        this.specialMessageModal = document.getElementById("specialMessageModal") as HTMLDivElement;
+        this.specialMessageHeader = document.getElementById("specialMessageHeader") as HTMLHeadingElement;
+        this.specialMessageContent = document.getElementById("specialMessageContent") as HTMLDivElement;
+        this.specialMessageButton = document.getElementById("specialMessageButton") as HTMLButtonElement;
+
+        this.specialMessageButton.addEventListener("click", () => {
+            this.closeSpecialMessageModal();
+        });
 
         // Open the inventory
         this.openInventoryButton.addEventListener("click", () => {
@@ -33,9 +61,45 @@ export default class UI {
 
         // Close the inventory
         this.closeInventoryButton.addEventListener("click", () => {
-            Game.getInstance().ticker.start();
-            this.inventory.classList.add("hide");
+            this.closeInventory();
         });
+    }
+
+    showSpecialMessageModal({headingText, body, button = "Close", handler}:SpecialMessageParams) {
+        this.messageOpen = true;
+        this.updateTickerStatus();
+
+        // Store the handler
+        this.specialMessageButtonHandlers.push(handler);
+
+        // Heading and button
+        this.specialMessageHeader.textContent = headingText;
+        this.specialMessageButton.textContent = button;
+
+        // Clear any prior content
+        while (this.specialMessageContent.lastChild) {
+            this.specialMessageContent.removeChild(this.specialMessageContent.lastChild);
+        }
+
+        // Add in the new content
+        body.forEach(line => {
+            const paragraph = document.createElement("p");
+            paragraph.textContent = line;
+            this.specialMessageContent.appendChild(paragraph);
+        })
+
+        // Show the modal
+        this.specialMessageModal.classList.remove("hide");
+    }
+
+    closeSpecialMessageModal() {
+        this.messageOpen = false;
+        this.updateTickerStatus();
+        while(this.specialMessageButtonHandlers.length > 0) {
+            const handler = this.specialMessageButtonHandlers.pop();
+            handler();
+        }
+        this.specialMessageModal.classList.add("hide");
     }
 
     toggleInventory() {
@@ -47,13 +111,23 @@ export default class UI {
     }
 
     openInventory() {
-        Game.getInstance().ticker.stop();
+        this.inventoryOpen = true;
+        this.updateTickerStatus();
         this.inventory.classList.remove("hide");
     }
 
     closeInventory() {
-        Game.getInstance().ticker.start();
+        this.inventoryOpen = false;
+        this.updateTickerStatus();
         this.inventory.classList.add("hide");
+    }
+
+    updateTickerStatus() {
+        if (!this.inventoryOpen && !this.messageOpen) {
+            Game.getInstance().ticker.start();
+        } else {
+            Game.getInstance().ticker.stop();
+        }
     }
 
     updateStatus(player:Player) {

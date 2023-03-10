@@ -45,6 +45,7 @@ class Player extends Entity {
         this.spriteForDamageTinting = Game.getInstance().overlayColor;
         Game.getInstance().player = this;
         UI.getInstance().updateInventory(this);
+        UI.getInstance().updateStatus(this);
     }
 
     handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup"|"buffer"|"repeat") {
@@ -239,6 +240,24 @@ class Player extends Entity {
         UI.getInstance().updateStatus(this);
         if (damage > 0) {
             this.bleed();
+        }
+        if (this.hp <= 0) {
+            console.log("Send message");
+            setTimeout(() => {
+                console.log("Send message??");
+                UI.getInstance().showSpecialMessageModal({
+                    headingText: "You died!",
+                    body: [
+                        `You were slain by ${attacker.name}. Now it will feast on your bones.`,
+                        "Your soul will be forever bound to this place.",
+                        "Would you like to try again?"
+                    ],
+                    button: "Try again",
+                    handler: () => {
+                        Game.getInstance().newMap(1, true);
+                    }
+                });
+            }, 3000);
         }
     }
 

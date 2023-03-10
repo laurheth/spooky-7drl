@@ -101,8 +101,10 @@ class Game {
     // Start a new map
     newMap(level:number = 1, fresh:boolean=false) {
         this.currentLevel = level;
-        this.mapHandler.generateNewMap({level: level});
+        this.mapHandler.generateNewMap({level: level, fresh:fresh});
         this.active = true;
+        UI.getInstance().closeInventory();
+        UI.getInstance().closeSpecialMessageModal();
     }
 
     // Go to the next level

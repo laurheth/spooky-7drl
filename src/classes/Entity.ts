@@ -265,8 +265,23 @@ class Entity {
                 this.moveTo(x, y, z);
                 break;
             case "win":
-                Logger.getInstance().sendMessage("You walk out through the exit. You feel a gust of air against your face. Is this freedom? Either way, you have escaped Spookea alive! Congratulations!",{tone:"good", important:true});
+                Logger.getInstance().sendMessage("You walk out through the exit, and into freedom!",{tone:"good", important:true});
                 Game.getInstance().gameOver();
+                setTimeout(() => {
+                    UI.getInstance().showSpecialMessageModal({
+                        headingText: "You won!",
+                        body: [
+                            "After a hard fought battle, you walk out through the exit. You feel a gust of air against your face.",
+                            "Is this freedom? Or is it only a matter of time before the horrors find you again?",
+                            "Either way, for now, you have escaped Spookea alive! Congratulations!",
+                            "Would you like to play again?"
+                        ],
+                        button: "Play again!",
+                        handler: () => {
+                            Game.getInstance().newMap(1, true);
+                        }
+                    });
+                }, 3000);
                 break;
         }
     }

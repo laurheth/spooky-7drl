@@ -11,16 +11,26 @@
     <body>
         <main>
             <div class="gameHolder">
+                <div id="specialMessageModal" class="specialMessageModal hide">
+                    <div class="modal">
+                        <h2 id="specialMessageHeader"></h2>
+                        <div id="specialMessageContent">
+                        </div>
+                        <button id="specialMessageButton"></button>
+                    </div>
+                </div>
                 <div id="inventory" class="inventory hide">
-                    <h2>Inventory</h2>
-                    <ul id="inventoryList">
-                        <li>
-                            <p>Cool thing</p>
-                            <button>Equip</button>
-                            <button>Drop</button>
-                        </li>
-                    </ul>
-                    <button id="closeInventory">Close Inventory</button>
+                    <div class="modal">
+                        <h2>Inventory</h2>
+                        <ul id="inventoryList">
+                            <li>
+                                <p>Cool thing</p>
+                                <button>Equip</button>
+                                <button>Drop</button>
+                            </li>
+                        </ul>
+                        <button id="closeInventory">Close Inventory</button>
+                    </div>
                 </div>
                 <div id="playerInfo" class="playerInfo">
                     <h2>Status:</h2>
