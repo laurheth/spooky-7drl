@@ -1,5 +1,6 @@
 import { Sprite, Texture } from "pixi.js"
 import Entity from "./Entity"
+import Player from "./Player"
 import Game from "./Game"
 import MapHandler from "./MapHandler"
 import { critterTypes, CritterAction, objectFactory } from "../util/entityTypes"
@@ -27,6 +28,7 @@ class Critter extends Entity {
     persistence: number;
     awake: number = 0;
     target: {x:number, y:number} = null;
+    home: {x:number, y:number} = null;
     previousStep:number[] = [0, 0];
     team:number = 1;
     path:number[][] = [];
@@ -38,7 +40,7 @@ class Critter extends Entity {
     awakeSprite:string;
     sleepSprite:string;
     currentSprite:string;
-    constructor({critterType, ...rest}:CritterParams) {
+    constructor({critterType, x, y, z, ...rest}:CritterParams) {
         const critterDetails = critterTypes[critterType];
         super({
             sprite: Sprite.from(critterDetails.spriteName),
@@ -46,9 +48,13 @@ class Critter extends Entity {
             actPeriod: critterDetails.actPeriod,
             movePeriod: critterDetails.movePeriod,
             acts: true,
+            x: x,
+            y: y,
+            z: z,
             ...rest,
             name: critterDetails.name
         });
+        this.home = {x:x,y:y};
         this.idleActions = critterDetails.idleActions ? critterDetails.idleActions : ["randomStep"];
         this.activeActions = critterDetails.activeActions ? critterDetails.activeActions : ["walkToTarget"];
         this.awareness = critterDetails.awareness ? critterDetails.awareness : 0.5;
@@ -232,6 +238,70 @@ class Critter extends Entity {
         }
     }
 
+    fireToTarget(target:{x:number, y:number}, updateMainTarget:boolean = true) {
+        // Consider firing
+        if (this.currentTile && this.currentTile.visible) {
+            if (target && (this.x === target.x || this.y === target.y)) {
+                if (Math.random() > 0.5) {
+                    // Fire!
+                    const fireSprite = Sprite.from("sprites/fireball.png");
+                    this.mapHandler.spriteContainer.addChild(fireSprite);
+                    fireSprite.x = this.sprite.x;
+                    fireSprite.y = this.sprite.y;
+                    let [x,y,z] = [this.x, this.y,this.z];
+                    const [dx,dy] = [Math.sign(target.x - this.x), Math.sign(target.y - this.y)];
+                    if (dx === 0 && dy === 0) {
+                        return;
+                    }
+                    Logger.getInstance().sendMessage(`The ${this.name} launches a fireball!`);
+                    const fireballSpeed = this.spriteSpeed * 2;
+                    const fireballStepPeriod = 1 / fireballSpeed;
+                    let timer = fireballStepPeriod / 2;
+                    // Pseudoactor to track the fireball
+                    const pseudoActor = {tick:(deltaMS:number) => {
+                        timer -= deltaMS;
+                        fireSprite.x += dx * this.mapHandler.tileScale * deltaMS * fireballSpeed;
+                        fireSprite.y += dy * this.mapHandler.tileScale * deltaMS * fireballSpeed;
+                        if (timer < 0) {
+                            timer += fireballStepPeriod;
+                            x += dx;
+                            y += dy;
+                        }
+                        const currentTile = this.mapHandler.getTile(x, y, z);
+                        fireSprite.visible = currentTile.visible;
+                        if (!currentTile || !currentTile.passable) {
+                            // Hit a wall
+                            pseudoActor.destroySelf();
+                        } else if (currentTile.entity && currentTile.entity && currentTile.entity !== this) {
+                            // Hit an entity other than the sender
+                            currentTile.entity.damage(2 * this.damageAmount(), this);
+                            if (currentTile.visible) {
+                                if (currentTile.entity instanceof Critter) {
+                                    Logger.getInstance().sendMessage(`The fireball hits ${currentTile.entity.name}!`);
+                                } else if (currentTile.entity instanceof Player) {
+                                    Logger.getInstance().sendMessage(`The fireball hits ${currentTile.entity.name}!`, {tone:"bad"});
+                                }
+                            }
+                            pseudoActor.destroySelf();
+                        }
+                    }, destroySelf: () => {
+                        const index = this.mapHandler.actors.indexOf(pseudoActor);
+                        if (index >= 0) {
+                            this.mapHandler.actors.splice(index, 1);
+                        }
+                        this.mapHandler.spriteContainer.removeChild(fireSprite);
+                        fireSprite.destroy();
+                    }};
+
+                    this.mapHandler.actors.push(pseudoActor);
+                    return;
+                }
+            }
+        }
+        // Not firing. Just walk.
+        this.walkToTarget(target, updateMainTarget);
+    }
+
     // Use pathfinding to get to the target
     pathToTarget(target:{x:number, y:number}) {
         // Check if we need to update the path
@@ -264,10 +334,16 @@ class Critter extends Entity {
         } else {
             // Step to the next step in the path
             const nextTarget = this.path[this.path.length-1];
-            this.step(nextTarget[0] - this.x, nextTarget[1] - this.y, 0);
-            // Check if we got there successfully. If so, remove the step from the path.
-            if (nextTarget[0] === this.x && nextTarget[1] === this.y) {
-                this.path.pop();
+            const [dx, dy] = [nextTarget[0] - this.x, nextTarget[1] - this.y];
+            if (Math.abs(dx) + Math.abs(dy) === 1) {
+                this.step(dx, dy, 0);
+                // Check if we got there successfully. If so, remove the step from the path.
+                if (nextTarget[0] === this.x && nextTarget[1] === this.y) {
+                    this.path.pop();
+                }
+            } else {
+                // Uhh somthing is wrong here.
+                this.path = [];
             }
         }
     }
@@ -285,6 +361,19 @@ class Critter extends Entity {
             }
         }
         this.pathToTarget(this.target);
+    }
+
+    // Path to home
+    pathToHome() {
+        if (this.home && (this.home.x !== this.x || this.home.y !== this.y)) {
+            this.target = {
+                x: this.home.x,
+                y: this.home.y,
+            }
+            this.pathToTarget(this.target);
+        } else {
+            this.pause();
+        }
     }
 
     deathMessage(): void {

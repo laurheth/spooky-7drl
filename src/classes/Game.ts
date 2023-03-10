@@ -136,6 +136,7 @@ class Game {
     }
 
     gameOver() {
+        this.player.active = false;
         this.active = false;
     }
 }

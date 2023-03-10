@@ -21,6 +21,7 @@ const tileList = [
 const spritePrefix = "sprites/";
 const spriteList = [
     "murderChair",
+    "rollyChair",
     "sofaBeast",
     "testSword",
     "bandaid",
@@ -43,6 +44,8 @@ const spriteList = [
     "exit1",
     "exit2",
     "exit3",
+    "kallax",
+    "fireball",
 ]
 
 const decorationsPrefix = "decoration/";

@@ -108,39 +108,41 @@ class MapHandler {
         } else if (level === 2) {
             generatedMap = mapGenerator({
                 monsterCount: 7,
-                targetRoomCount: 6
+                targetRoomCount: 6,
+                bonusGoodItems: ["bomb"]
             });
         } else if (level === 3) {
             generatedMap = mapGenerator({
                 monsterCount: 8,
                 targetRoomCount: 8,
-                monsterOptions: ["chair", "chair", "chair", "lamp"]
+                monsterOptions: ["chair", "chair", "chair", "lamp"],
+                bonusGoodItems: ["chainsaw", "bomb"]
             });
         } else if (level === 4) {
             generatedMap = mapGenerator({
-                monsterCount: 9,
-                targetRoomCount: 9,
-                monsterOptions: ["chair", "chair", "chair", "lamp", "lamp"],
-                bonusGoodItems: ["bomb"]
+                monsterCount: 11,
+                monsterOptions: ["chair", "chair", "rolly", "lamp", "lamp"],
+                bonusGoodItems: ["bomb","chainsaw"]
             });
         } else if (level === 5) {
             generatedMap = mapGenerator({
                 monsterCount: 13,
-                monsterOptions: ["chair", "chair", "chair", "lamp"],
+                monsterOptions: ["chair","rolly","lamp","kallax"],
                 bonusGoodItems: ["bomb","chainsaw"]
             });
-        } else if (level < 8) {
+        } else if (level === 6) {
             generatedMap = mapGenerator({
-                monsterCount: 4.5 + 1.1 * level,
-                bonusGoodItems: ["bomb","chainsaw"],
-                monsterOptions: ["chair", "chair", "lamp","chair", "chair", "lamp","tv"]
+                monsterCount: 15,
+                targetRoomCount: 12,
+                monsterOptions: ["chair", "chair", "lamp","rolly", "kallax", "lamp","tv"],
+                bonusGoodItems: ["bomb","chainsaw"]
             });
         } else {
             generatedMap = mapGenerator({
-                monsterCount: 10,
-                targetRoomCount: 11,
+                monsterCount: 12,
+                targetRoomCount: 12,
                 bonusGoodItems: ["bomb","chainsaw","bomb"],
-                monsterOptions: ["chair", "chair", "chair", "chair", "lamp", "lamp", "lamp", "tv"],
+                monsterOptions: ["chair", "kallax", "rolly", "lamp", "tv"],
                 includeWinCondition: true,
             });
         }

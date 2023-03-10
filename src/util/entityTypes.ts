@@ -6,7 +6,7 @@ import MapHandler from "../classes/MapHandler"
 /**
  * Data object full of critter types
  */
-export type CritterAction = "randomStep" | "walkToTarget" | "pathToTarget" | "patrol" | "pause";
+export type CritterAction = "randomStep" | "walkToTarget" | "pathToTarget" | "patrol" | "pause" | "pathToHome" | "fireToTarget";
 
 interface CritterDetails {
     name: string;
@@ -73,16 +73,33 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         hp: 200,
         actPeriod: 1000,
         movePeriod: 200,
-        idleActions: ["pause"] as CritterAction[],
+        idleActions: ["pathToHome"] as CritterAction[],
         activeActions: ["walkToTarget"] as CritterAction[],
         awareness: 1,
         persistence: 10,
         actionTypes: ["violence"] as ActionTypes[],
         entityFlags: [] as EntityFlags[],
-        strength: 34,
+        strength: 33,
         unseenSounds: ["You hear the sound of static.", "You hear a high pitched sound, on the edge of human hearing."] as string[],
         seenSounds: ["In the sound of static you can hear about how you never succeeded in your dreams.", "The static whispers to you about the futility of life.", "The static tells you to come closer.", "The static feels like it is emanating from within your own mind.", "All feelings of hope are washed away by the static."] as string[],
         volume: 3,
+    },
+    kallax: {
+        name: "the unsupported kallax",
+        spriteName: "sprites/kallax.png",
+        hp: 40,
+        actPeriod: 600,
+        movePeriod: 300,
+        idleActions: ["randomStep", "pause"] as CritterAction[],
+        activeActions: ["fireToTarget"] as CritterAction[],
+        awareness: 0.5,
+        persistence: 10,
+        actionTypes: ["violence"] as ActionTypes[],
+        entityFlags: [] as EntityFlags[],
+        strength: 5,
+        unseenSounds: ["You hear the sound of wood scraping on the floor."] as string[],
+        seenSounds: ["You you smell brimstone coming from the kallax!"] as string[],
+        volume: 1,
     },
     chair: {
         name: "the possessed chair",
@@ -98,6 +115,23 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         entityFlags: [] as EntityFlags[],
         strength: 10,
         unseenSounds: ["You hear the sound of wood scraping on the floor."] as string[],
+        seenSounds: [] as string[],
+        volume: 1,
+    },
+    rolly: {
+        name: "the possessed computer chair",
+        spriteName: "sprites/rollyChair.png",
+        hp: 40,
+        actPeriod: 350,
+        movePeriod: 200,
+        idleActions: ["randomStep", "pause"] as CritterAction[],
+        activeActions: ["walkToTarget"] as CritterAction[],
+        awareness: 0.5,
+        persistence: 10,
+        actionTypes: ["push", "violence"] as ActionTypes[],
+        entityFlags: [] as EntityFlags[],
+        strength: 10,
+        unseenSounds: ["You hear the sound of wheels rolling on the ground."] as string[],
         seenSounds: [] as string[],
         volume: 1,
     },
@@ -199,7 +233,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 acts: true,
                 actPeriod: 5000,
                 actionTypes:["open"],
-                hp: 1,
+                hp: 20,
                 removeOnDeath: true,
             })
         case "red door":
@@ -212,7 +246,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 acts: true,
                 actPeriod: 5000,
                 actionTypes:["unlock"],
-                hp: 1,
+                hp: 20,
                 needsKey: "red key",
                 removeOnDeath: true,
             })
@@ -226,7 +260,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 acts: true,
                 actPeriod: 5000,
                 actionTypes:["unlock"],
-                hp: 1,
+                hp: 20,
                 needsKey: "blue key",
                 removeOnDeath: true,
             })
@@ -240,7 +274,7 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
                 acts: true,
                 actPeriod: 5000,
                 actionTypes:["unlock"],
-                hp: 1,
+                hp: 20,
                 needsKey: "yellow key",
                 removeOnDeath: true,
             })

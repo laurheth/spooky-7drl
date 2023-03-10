@@ -146,6 +146,9 @@ class Entity {
 
     // Get acted upon
     actUpon(actor:Entity) {
+        if (actor === this) {
+            return;
+        }
         [...this.actionTypes].forEach(actionType => {
             this.performSpecificAction(actionType, actor);
         });
@@ -252,6 +255,9 @@ class Entity {
                 // We didn't do it! Fall through the switch case and, instead, do a swap.
             case "swap":
                 // Trade places
+                if (!this.currentTile || !actor.currentTile) {
+                    break;
+                }
                 this.currentTile.entity = null;
                 actor.currentTile.entity = null;
                 const [x,y,z] = [actor.x, actor.y, actor.z];
