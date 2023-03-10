@@ -116,6 +116,12 @@ class Game {
             UI.getInstance().toggleInventory();
         } else if (eventType === "keydown" && (event.key === "Escape" || event.key === "Esc")) {
             UI.getInstance().closeInventory();
+        } else if (eventType === "keydown" && event.key === "P") {
+            if (this.ticker.started) {
+                this.ticker.stop();
+            } else {
+                this.ticker.start();
+            }
         } else {
             if (this.player) {
                 this.player.handleInput(event, eventType);
