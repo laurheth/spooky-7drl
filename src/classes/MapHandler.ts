@@ -57,7 +57,7 @@ class MapHandler {
                 }
             }).map(option => [option[0] + x, option[1] + y]);
         }, ([x,y]) => {
-            const key = `${x},${y},1`;
+            const key:string = `${x},${y},1`;
             if (this.tileMap.has(key)) {
                 return this.tileMap.get(key).entity ? 2 : 1;
             }
@@ -98,7 +98,52 @@ class MapHandler {
         }
         this.clearOldMap()
 
-        const generatedMap = mapGenerator();
+        let generatedMap:ReturnType<typeof mapGenerator>;
+        if (level === 1) {
+            generatedMap = mapGenerator({
+                monsterCount: 5,
+                targetRoomCount: 5,
+                noBigGuy: true
+            });
+        } else if (level === 2) {
+            generatedMap = mapGenerator({
+                monsterCount: 7,
+                targetRoomCount: 6
+            });
+        } else if (level === 3) {
+            generatedMap = mapGenerator({
+                monsterCount: 8,
+                targetRoomCount: 8,
+                monsterOptions: ["chair", "chair", "chair", "lamp"]
+            });
+        } else if (level === 4) {
+            generatedMap = mapGenerator({
+                monsterCount: 9,
+                targetRoomCount: 9,
+                monsterOptions: ["chair", "chair", "chair", "lamp", "lamp"],
+                bonusGoodItems: ["bomb"]
+            });
+        } else if (level === 5) {
+            generatedMap = mapGenerator({
+                monsterCount: 13,
+                monsterOptions: ["chair", "chair", "chair", "lamp"],
+                bonusGoodItems: ["bomb","chainsaw"]
+            });
+        } else if (level < 8) {
+            generatedMap = mapGenerator({
+                monsterCount: 4.5 + 1.1 * level,
+                bonusGoodItems: ["bomb","chainsaw"],
+                monsterOptions: ["chair", "chair", "lamp","chair", "chair", "lamp","tv"]
+            });
+        } else {
+            generatedMap = mapGenerator({
+                monsterCount: 10,
+                targetRoomCount: 11,
+                bonusGoodItems: ["bomb","chainsaw","bomb"],
+                monsterOptions: ["chair", "chair", "chair", "chair", "lamp", "lamp", "lamp", "tv"],
+                includeWinCondition: true,
+            });
+        }
         
         // Translate the generated map into tiles
         generatedMap.map.forEach((tilePlan, key) => {

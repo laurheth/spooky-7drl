@@ -255,10 +255,20 @@ class Player extends Entity {
         if (this.equippedItem) {
             if (this.equippedItem.damage()) {
                 if (this.equippedItem.durability <= 0) {
-                    Logger.getInstance().sendMessage(`Your ${this.equippedItem.name} has broken!`, {tone:"bad"});
+                    const itemName = this.equippedItem.name;
+                    Logger.getInstance().sendMessage(`Your ${itemName} has broken!`, {tone:"bad"});
                     const index = this.inventory.indexOf(this.equippedItem);
                     this.inventory.splice(index, 1);
                     this.equippedItem = null;
+                    // See if we have a replacement
+                    this.inventory.forEach(otherItem => {
+                        if (otherItem.name === itemName) {
+                            this.equippedItem = otherItem;
+                        }
+                    })
+                    if (this.equippedItem) {
+                        Logger.getInstance().sendMessage(`You pull a spare ${itemName} from your pocket and equip it!`);
+                    }
                 }
                 UI.getInstance().updateInventory(this);
             }

@@ -22,7 +22,6 @@ const spritePrefix = "sprites/";
 const spriteList = [
     "murderChair",
     "sofaBeast",
-    "testBigCritter",
     "testSword",
     "bandaid",
     "medkit",
@@ -38,6 +37,12 @@ const spriteList = [
     "chainsaw",
     "hammer",
     "hero",
+    "lamp",
+    "demonLamp",
+    "tv",
+    "exit1",
+    "exit2",
+    "exit3",
 ]
 
 const decorationsPrefix = "decoration/";

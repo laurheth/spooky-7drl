@@ -1,8 +1,8 @@
-import { Sprite } from "pixi.js"
+import { Sprite, Texture } from "pixi.js"
 import Entity from "./Entity"
 import Game from "./Game"
 import MapHandler from "./MapHandler"
-import { critterTypes, CritterAction } from "../util/entityTypes"
+import { critterTypes, CritterAction, objectFactory } from "../util/entityTypes"
 import { randomElement } from "../util/randomness";
 import Logger from "./Logger"
 
@@ -34,6 +34,10 @@ class Critter extends Entity {
     seenSounds:string[];
     volume:number;
     soundDelay:number = 0;
+    corpseObject:string;
+    awakeSprite:string;
+    sleepSprite:string;
+    currentSprite:string;
     constructor({critterType, ...rest}:CritterParams) {
         const critterDetails = critterTypes[critterType];
         super({
@@ -55,6 +59,16 @@ class Critter extends Entity {
         this.volume = critterDetails.volume ? critterDetails.volume : 1;
         this.unseenSounds = critterDetails.unseenSounds ? critterDetails.unseenSounds : [];
         this.seenSounds = critterDetails.seenSounds ? critterDetails.seenSounds : [];
+
+        if (critterDetails.corpseObject) {
+            this.corpseObject = critterDetails.corpseObject;
+            this.removeOnDeath = true;
+        }
+        if (critterDetails.awakeSpriteName) {
+            this.awakeSprite = critterDetails.awakeSpriteName;
+            this.sleepSprite = critterDetails.spriteName;
+            this.currentSprite = this.sleepSprite;
+        }
     }
 
     act() {
@@ -64,8 +78,14 @@ class Critter extends Entity {
         }
         if (this.awake > 0) {
             this.observe(this.awareness * this.awake);
+            if (this.currentSprite && this.currentSprite !== this.awakeSprite) {
+                this.sprite.texture = Texture.from(this.awakeSprite);
+            }
         } else {
             this.observe(this.awareness);
+            if (this.currentSprite && this.currentSprite !== this.sleepSprite) {
+                this.sprite.texture = Texture.from(this.sleepSprite);
+            }
         }
         if (this.stepsUntilTaskSwitch > 0 && this.task) {
             this.stepsUntilTaskSwitch--;
@@ -81,7 +101,7 @@ class Critter extends Entity {
             this[action](this.target);
         }
         // Make some noise
-        if (this.soundDelay < 0) {
+        if (this.soundDelay < 0 && (!this.currentSprite || this.awake > 0)) {
             this.mapHandler.sound(
                 {
                     x: this.x,
@@ -98,6 +118,22 @@ class Critter extends Entity {
         } else {
             this.soundDelay--;
         }
+        if (this.awake > 0 && this.currentSprite && this.currentSprite !== this.awakeSprite) {
+            this.sprite.texture = Texture.from(this.awakeSprite);
+        } else if (this.awake < 0 && this.currentSprite && this.currentSprite !== this.sleepSprite) {
+            this.sprite.texture = Texture.from(this.sleepSprite);
+        }
+    }
+
+    die(): void {
+        super.die();
+        if (this.corpseObject) {
+            objectFactory({
+                x: this.x,
+                y: this.y,
+                z: this.z
+            }, this.corpseObject, this.mapHandler);
+        }
     }
 
     // Can we detect the player?
@@ -105,6 +141,9 @@ class Critter extends Entity {
         const currentAwakeState = this.awake;
         if (!manualLight && !this.currentTile) {
             return;
+        }
+        if (currentAwakeState > 0 && awareAmount < 0) {
+            awareAmount = -awareAmount;
         }
         if (Math.random() < awareAmount * (manualLight ? manualLight : this.currentTile.light)) {
             this.awake = this.persistence;
@@ -152,6 +191,13 @@ class Critter extends Entity {
     randomStep() {
         const [dx, dy] = randomElement([[-1,0],[1,0],[0,1],[0,-1]]);
         this.step(dx, dy, 0);
+    }
+
+    damage(damage: number, attacker?: Entity): void {
+        super.damage(damage, attacker);
+        if (this.awake < 0) {
+            this.observe(100);
+        }
     }
 
     walkToTarget(target:{x:number, y:number}, updateMainTarget:boolean = true) {

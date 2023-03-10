@@ -4,8 +4,9 @@ import Tile from "./Tile"
 import Logger from "./Logger"
 import Player from "./Player"
 import UI from "./UI"
+import Game from "./Game"
 
-export type ActionTypes = "open" | "violence" | "push" | "swap" | "unlock";
+export type ActionTypes = "open" | "violence" | "push" | "swap" | "unlock" | "win";
 export type EntityFlags = "important" | "big" | "undying";
 
 export interface EntityParams {
@@ -228,7 +229,7 @@ class Entity {
                         this.mapHandler.sound(
                             {x:actor.x, y:actor.y},
                             {},
-                            Math.max(5, dmg) * Math.random(),
+                            Math.max(5, dmg / 2) * Math.random(),
                             true
                         );
                     }
@@ -256,6 +257,10 @@ class Entity {
                 const [x,y,z] = [actor.x, actor.y, actor.z];
                 actor.moveTo(this.x, this.y, this.z);
                 this.moveTo(x, y, z);
+                break;
+            case "win":
+                Logger.getInstance().sendMessage("You walk out through the exit. You feel a gust of air against your face. Is this freedom? Either way, you have escaped Spookea alive! Congratulations!",{tone:"good", important:true});
+                Game.getInstance().gameOver();
                 break;
         }
     }

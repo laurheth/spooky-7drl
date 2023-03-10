@@ -19,21 +19,21 @@ const themes:Theme[] = [
         floor:'badConcrete',
         wallTint:0xA00000,
         floorTint:0x666666,
-        decorations:["box", "bookshelf","cabinet"]
+        decorations:["box", "bookshelf","cabinet","lamp"]
     },
     {
         wall:'testWall',
         floor:'badConcrete',
         wallTint:0x0000AA,
         floorTint:0x666644,
-        decorations:["bookshelf","cabinet"]
+        decorations:["bookshelf","cabinet","lamp"]
     },
     {
         wall:'testWall',
         floor:'badConcrete',
         wallTint:0x990099,
         floorTint:0x669966,
-        decorations:["bookshelf","cabinet"]
+        decorations:["bookshelf","cabinet","lamp"]
     },
     {
         wall:'badBricks',

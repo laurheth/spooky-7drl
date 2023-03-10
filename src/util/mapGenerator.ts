@@ -8,6 +8,11 @@ interface MapGenParams {
     maxRoomSize?: number;
     targetRoomCount?: number;
     multipleConnectionChance?: number;
+    monsterCount?: number;
+    monsterOptions?: string[];
+    noBigGuy?: boolean;
+    includeWinCondition?: boolean;
+    bonusGoodItems?: string[];
 }
 
 interface TilePlan {
@@ -41,12 +46,12 @@ interface ItemData {
     key: string;
 }
 
-const veryGoodItems = ["bomb", "hammer", "medkit", "hammer", "medkit", "chainsaw"];
+const veryGoodItems = ["hammer", "medkit", "hammer", "medkit"];
 
 /**
  * Cool function to generate the map
  */
-export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomCount=10, multipleConnectionChance=0.5}:MapGenParams = {}) {
+export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomCount=10, multipleConnectionChance=0.5, monsterCount=10, monsterOptions=["chair"], noBigGuy=false, includeWinCondition=false, bonusGoodItems=[]}:MapGenParams = {}) {
     const map = new Map<string, TilePlan>();
     const rooms:RoomData[] = [];
     const roomConnectionTracker:number[][] = [];
@@ -268,7 +273,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     }
 
     // Place some nice items in the remaining deadends
-    const coolItems = veryGoodItems.slice(0);
+    const coolItems = [...veryGoodItems, ...bonusGoodItems];
     deadends.forEach(index => {
         items.push({
             name: randomElement(coolItems, true),
@@ -276,6 +281,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         })
         if (coolItems.length === 0) {
             veryGoodItems.forEach(item => coolItems.push(item));
+            bonusGoodItems.forEach(item => coolItems.push(item));
         }
     })
 
@@ -293,20 +299,30 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     
     // Add some critters
     const critters:CritterData[] = [];
-    // Big bad should be able to chase player from the start, put them in a middle room
-    const bigKey = randomElement(rooms[randomElement(middleRooms)].spots, true);
-    critters.push({
-        name: "bigBad",
-        key: bigKey
-    })
-    entitySpots.splice(entitySpots.indexOf(bigKey), 1);
+    if (!noBigGuy) {
+        // Big bad should be able to chase player from the start, put them in a middle room
+        const bigKey = randomElement(rooms[randomElement(middleRooms)].spots, true);
+        critters.push({
+            name: "bigBad",
+            key: bigKey
+        })
+        entitySpots.splice(entitySpots.indexOf(bigKey), 1);
+    }
 
     // Figure out keys and locks
     const keyOptions = ["red", "blue", "yellow"];
     let keyToPlace = "stairs";
+    if (includeWinCondition) {
+        keyToPlace = "exit";
+    }
     const placeKey = (keyWeArePlacing:string, mapKey:string) => {
         if (keyWeArePlacing === "stairs") {
             map.get(mapKey).type = keyWeArePlacing;
+        } else if (keyWeArePlacing === "exit") {
+            critters.push({
+                name: "exit",
+                key: mapKey
+            })
         } else {
             items.push({
                 name: keyWeArePlacing,
@@ -352,9 +368,9 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     });
 
     // Others
-    for (let i=0; i<10; i++) {
+    for (let i=0; i<monsterCount; i++) {
         critters.push({
-            name: "chair",
+            name: randomElement(monsterOptions),
             key: randomElement(entitySpots, true)
         })
     }

@@ -32,6 +32,8 @@ class Game {
 
     currentLevel: number = 0;
 
+    active: boolean = false;
+
     init() {
         // Initialize the Pixi application.
         this.pixiApp = new Application({
@@ -100,6 +102,7 @@ class Game {
     newMap(level:number = 1, fresh:boolean=false) {
         this.currentLevel = level;
         this.mapHandler.generateNewMap({level: level});
+        this.active = true;
     }
 
     // Go to the next level
@@ -121,9 +124,13 @@ class Game {
     }
 
     tick(_deltaTime:number) {
-        if (this.mapHandler) {
+        if (this.mapHandler && this.active) {
             this.mapHandler.tick(this.ticker.deltaMS);
         }
+    }
+
+    gameOver() {
+        this.active = false;
     }
 }
 
