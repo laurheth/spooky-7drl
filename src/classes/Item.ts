@@ -64,7 +64,7 @@ class Item {
 
     placeSelf(x:number, y:number, z:number):boolean {
         const tile = this.mapHandler.getTile(x,y,z);
-        if (tile && tile.passable && !tile.item) {
+        if (tile && tile.passable && !tile.item && !tile.interactive) {
             tile.item = this;
             this.x = x;
             this.y = y;

@@ -119,6 +119,7 @@ class Game {
             UI.getInstance().toggleInventory();
         } else if (eventType === "keydown" && (event.key === "Escape" || event.key === "Esc")) {
             UI.getInstance().closeInventory();
+            UI.getInstance().closeSpecialMessageModal();
         } else if (eventType === "keydown" && event.key === "P") {
             if (this.ticker.started) {
                 this.ticker.stop();

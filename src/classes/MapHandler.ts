@@ -8,8 +8,10 @@ import mapGenerator from "../util/mapGenerator"
 import VisionHandler from "./VisionHandler"
 import Pathfinder from "./Pathfinder"
 import { objectFactory, itemFactory } from "../util/entityTypes"
+import getInteractable from "../util/interactables"
 import Logger from "./Logger"
 import themes from "../util/themes"
+import { randomElement } from "../util/randomness"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -240,6 +242,24 @@ class MapHandler {
             const tile = this.tileMap.get(`${decoration.key},1`);
             tile.addDecoration(decoSprite);
         });
+
+        // Add in interactables
+        let numAdded = 0;
+        while (numAdded < 2 && generatedMap.interactableSpot.length > 0) {
+            const toAdd = getInteractable(level);
+            if (!toAdd) {
+                break;
+            } else {
+                const key = randomElement(generatedMap.interactableSpot, true) + ',1';
+                if (this.tileMap.has(key)) {
+                    const tile = this.tileMap.get(key);
+                    if (tile) {
+                        tile.addInteractive(toAdd.actual, toAdd.actual?.sprite);
+                    }
+                }
+            }
+            numAdded++;
+        }
 
         // Add items
         generatedMap.items.forEach(item => {

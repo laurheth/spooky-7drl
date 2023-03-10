@@ -58,6 +58,10 @@ li {
     min-width: 300px;
 }
 
+.modal h2 {
+    text-transform: capitalize;
+}
+
 .modal h2, .modal p {
     margin: 0;
     text-align: center;

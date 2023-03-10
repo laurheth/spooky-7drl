@@ -108,6 +108,13 @@ class Player extends Entity {
                             Game.getInstance().nextLevel();
                         }
                         break;
+                    case "e":
+                    case "r":
+                        if (this.currentTile && this.currentTile.interactive) {
+                            this.currentTile.interactive.use();
+                        } else {
+                            Logger.getInstance().sendMessage("There is nothing here to read.");
+                        }
                 }
                 if (turnDone) {
                     this.clock = 0;
@@ -196,6 +203,9 @@ class Player extends Entity {
             if (this.currentTile.item) {
                 Logger.getInstance().sendMessage(`You see at your feet at ${this.currentTile.item.name}.`);
             }
+            if (this.currentTile.interactive) {
+                Logger.getInstance().sendMessage(`There is a ${this.currentTile.interactive.name} here. Read it? (Press "r")`);
+            }
             if (this.currentTile.levelExit) {
                 Logger.getInstance().sendMessage(`You found staircase, descending into darkness below...`, {tone:"good", important:true});
             }
@@ -242,9 +252,7 @@ class Player extends Entity {
             this.bleed();
         }
         if (this.hp <= 0) {
-            console.log("Send message");
             setTimeout(() => {
-                console.log("Send message??");
                 UI.getInstance().showSpecialMessageModal({
                     headingText: "You died!",
                     body: [

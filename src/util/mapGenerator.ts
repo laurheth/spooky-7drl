@@ -243,6 +243,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
 
     // Which rooms are deadends? Might be useful knowledge
     const deadends:number[] = [];
+    const deadendsCopy:number[] = [];
     const middleRooms:number[] = [];
     rooms.forEach((roomData, index) => {
         let floorCount = 0;
@@ -264,6 +265,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         }
         if (wallCount >= roomData.expectedWall - 1) {
             deadends.push(index);
+            deadendsCopy.push(index);
         } else {
             middleRooms.push(index);
         }
@@ -409,7 +411,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
     }
 
     // Print for debugging
-    // Remove before release.
+    // TODO: Remove the below before release.
     let xBounds = [0,0];
     let yBounds = [0,0];
     map.forEach((plan,key) => {
@@ -444,6 +446,23 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         toPrint += rowString;
     })
     console.log(toPrint);
+    // End of debugging message. TODO: delete the above before release.
+
+    // Finally, add in some spots that might be good for interactables. Actually adding them is for somewhere else, though.
+    const goodInteractableSpots:string[] = [];
+    deadendsCopy.forEach(x => {
+        const spot = randomElement(rooms[x].spots, true);
+        if (spot) {
+            goodInteractableSpots.push(spot);
+        }
+    })
+
+    while (goodInteractableSpots.length < 3) {
+        const spot = randomElement(entitySpots, true);
+        if (spot) {
+            goodInteractableSpots.push(spot);
+        }
+    }
 
     return {
         map: map,
@@ -452,7 +471,8 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         decorations: decorations,
         items: items,
         critters: critters,
-        otherObjects: otherObjects
+        otherObjects: otherObjects,
+        interactableSpot: goodInteractableSpots,
     }
 }
 

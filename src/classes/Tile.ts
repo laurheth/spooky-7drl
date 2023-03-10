@@ -1,6 +1,7 @@
 import { Sprite, Container, utils } from "pixi.js"
 import Entity from "./Entity"
 import Item from "./Item"
+import Interactive from "./Interactive";
 
 interface TileParams {
     passable: boolean;
@@ -11,6 +12,7 @@ interface TileParams {
     y: number;
     levelExit?: boolean;
     baseTint: number;
+    interactive?: Interactive;
 }
 
 /**
@@ -28,8 +30,8 @@ class Tile {
     decoration: Sprite;
     levelExit: boolean;
     baseTintRgb: number[];
-
-    constructor({passable, seeThrough, sprite, x, y, parent, levelExit = false, baseTint}:TileParams) {
+    interactive: Interactive;
+    constructor({passable, seeThrough, sprite, x, y, parent, levelExit = false, baseTint, interactive}:TileParams) {
         this.passable = passable;
         this._seeThrough = seeThrough;
         this.seen = false; // Start not previously seen
@@ -40,6 +42,7 @@ class Tile {
         parent.addChild(this.sprite);
         this.sprite.x = x;
         this.sprite.y = y;
+        this.interactive = interactive;
         this.light = 0;
         this.levelExit = levelExit;
         this.baseTintRgb = utils.hex2rgb(baseTint) as number[];
@@ -94,6 +97,16 @@ class Tile {
             this.sprite.removeChild(this.decoration);
         }
         this.decoration = null;
+    }
+
+    addInteractive(interactive:Interactive, spriteToUse:Sprite = null) {
+        this.interactive = interactive;
+        if (spriteToUse) {
+            if (this.decoration) {
+                this.removeDecoration();
+            }
+            this.sprite.addChild(spriteToUse);
+        }
     }
 }
 

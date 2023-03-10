@@ -70,7 +70,9 @@ export default class UI {
         this.updateTickerStatus();
 
         // Store the handler
-        this.specialMessageButtonHandlers.push(handler);
+        if (handler) {
+            this.specialMessageButtonHandlers.push(handler);
+        }
 
         // Heading and button
         this.specialMessageHeader.textContent = headingText;
