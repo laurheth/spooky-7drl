@@ -93,7 +93,7 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         movePeriod: 300,
         idleActions: ["randomStep", "pause"] as CritterAction[],
         activeActions: ["fireToTarget"] as CritterAction[],
-        awareness: 0.5,
+        awareness: 1,
         persistence: 10,
         actionTypes: ["violence"] as ActionTypes[],
         entityFlags: [] as EntityFlags[],
@@ -158,11 +158,11 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         name: "the Sofa of Eternity",
         spriteName: "sprites/sofaBeast.png",
         hp: 100,
-        actPeriod: 400,
-        movePeriod: 400,
+        actPeriod: 450,
+        movePeriod: 450,
         idleActions: ["patrol"] as CritterAction[],
         activeActions: ["pathToTarget"] as CritterAction[],
-        awareness: 1,
+        awareness: 0.5,
         persistence: 20,
         actionTypes: ["violence"] as ActionTypes[],
         entityFlags: ["important", "big", "undying"] as EntityFlags[],
@@ -194,6 +194,19 @@ export function objectFactory(position:{x:number, y:number, z:number}, typeName:
             return new Entity({
                 name: "lamp",
                 sprite: Sprite.from("sprites/lamp.png"),
+                mapHandler: mapHandler,
+                blocksVision: false,
+                ...position,
+                acts: true,
+                actPeriod: 200,
+                actionTypes:["push"],
+                hp: 1,
+                removeOnDeath: true,
+            })
+        case "table":
+            return new Entity({
+                name: "table",
+                sprite: Sprite.from("sprites/table.png"),
                 mapHandler: mapHandler,
                 blocksVision: false,
                 ...position,
@@ -314,6 +327,7 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 attackString: "slash",
                 durability: 5 + 10 * Math.random(),
                 durabilityRate: 0.5,
+                value: 2
             });
         case "hammer":
             return new Item({
@@ -325,7 +339,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 strength: 15,
                 attackString: "smash",
                 durability: 5 + 10 * Math.random(),
-                durabilityRate: 0.33,
+                durabilityRate: 0.4,
+                value: 2
             });
         case "hex key":
             return new Item({
@@ -338,6 +353,7 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 attackString: "unscrew",
                 durability: 5 + 10 * Math.random(),
                 durabilityRate: 0.33,
+                value: 1
             });
         case "chainsaw":
             return new Item({
@@ -350,6 +366,7 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 attackString: "chainsaw",
                 durability: 10 + 2 * Math.random(),
                 durabilityRate: 0.01,
+                value: 10,
             });
         case "bandaid":
             return new Item({
@@ -365,7 +382,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 useAction: {
                     type: "heal",
                     value: 25
-                }
+                },
+                value: 0.2
             });
         case "medkit":
             return new Item({
@@ -381,7 +399,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 useAction: {
                     type: "heal",
                     value: 50
-                }
+                },
+                value: 1
             });
         case "bomb":
             return new Item({
@@ -398,7 +417,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                     type: "bomb",
                     value: "50,8,3100"
                 },
-                alternateSprite: Sprite.from("sprites/bombLit.png")
+                alternateSprite: Sprite.from("sprites/bombLit.png"),
+                value: 10
             });
         case "yellow key":
         case "blue key":
@@ -417,7 +437,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 useAction: {
                     type: "key",
                     value: typeName
-                }
+                },
+                value: -1
             });
     }
 }

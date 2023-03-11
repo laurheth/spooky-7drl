@@ -48,6 +48,7 @@ const spriteList:string[] = [
     // "fireball",
     // "healer",
     "note",
+    "grave",
 ]
 
 const decorationsPrefix = "decoration/";

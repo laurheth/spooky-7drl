@@ -2,6 +2,7 @@ import { Application, SCALE_MODES, Container, BaseTexture, Ticker, Sprite, Textu
 import MapHandler from "./MapHandler"
 import Player from "./Player"
 import UI from "./UI"
+import { resetFunction } from "../util/interactables";
 
 /**
  * This class encapsulates game setup, keeps track of the Pixi.js app, and some related functionality.
@@ -101,6 +102,9 @@ class Game {
 
     // Start a new map
     newMap(level:number = 1, fresh:boolean=false) {
+        if (fresh) {
+            resetFunction();
+        }
         this.currentLevel = level;
         this.mapHandler.generateNewMap({level: level, fresh:fresh});
         this.active = true;
@@ -115,7 +119,7 @@ class Game {
 
     // Input handler. Pass it to the player entity.
     handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup") {
-        if (eventType === "keydown" && event.key === "i") {
+        if (eventType === "keydown" && event.key.toLowerCase() === "i") {
             UI.getInstance().toggleInventory();
         } else if (eventType === "keydown" && (event.key === "Escape" || event.key === "Esc")) {
             UI.getInstance().closeInventory();

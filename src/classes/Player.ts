@@ -57,27 +57,33 @@ class Player extends Entity {
                 let turnDone = false;
                 switch(event.key) {
                     case "a":
+                    case "A":
                     case "Left":
                     case "ArrowLeft":
                         turnDone = this.step(-1, 0, 0);
                         break;
                     case "d":
+                    case "D":
                     case "Right":
                     case "ArrowRight":
                         turnDone = this.step(1, 0, 0);
                         break;
                     case "Up":
                     case "w":
+                    case "W":
                     case "ArrowUp":
                         turnDone = this.step(0, -1, 0);
                         break;
                     case "Down":
                     case "s":
+                    case "S":
                     case "ArrowDown":
                         turnDone = this.step(0, 1, 0);
                         break;
                     case "g": // get
                     case "p": // put
+                    case "G": // get
+                    case "P": // put
                         if (eventType === "repeat") {
                             // Don't repeat picking up.
                             break;
@@ -110,6 +116,8 @@ class Player extends Entity {
                         break;
                     case "e":
                     case "r":
+                    case "E":
+                    case "R":
                         if (this.currentTile && this.currentTile.interactive) {
                             this.currentTile.interactive.use();
                         } else {
@@ -207,7 +215,7 @@ class Player extends Entity {
                 Logger.getInstance().sendMessage(`There is a ${this.currentTile.interactive.name} here. Read it? (Press "r")`);
             }
             if (this.currentTile.levelExit) {
-                Logger.getInstance().sendMessage(`You found staircase, descending into darkness below...`, {tone:"good", important:true});
+                Logger.getInstance().sendMessage(`You found staircase, descending into darkness below... (Use ">" to descend)`, {tone:"good", important:true});
             }
         }
         this.updateVisionDelay = this.actPeriod / 2;
@@ -266,6 +274,33 @@ class Player extends Entity {
                     }
                 });
             }, 3000);
+            try {
+                const date = new Date();
+                const dd = String(date.getDate()).padStart(2, '0');
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const yyyy = date.getFullYear();
+
+                const today = mm + '/' + dd + '/' + yyyy;
+                if (attacker) {
+                    localStorage.setItem("graveText", `Here lies You. Slain by ${attacker.name} on ${today}.\nYou have been here before. You will be here again.\nThere is no escape.`);
+                } else {
+                    localStorage.setItem("graveText", `Here lies You. Met your doom on ${today}.\nYou have been here before. You will be here again.\nThere is no escape.`);
+                }
+                if (this.inventory.length > 0) {
+                    this.inventory.sort((itemA, itemB) => itemB.value - itemA.value);
+                    let name = this.inventory[0].name;
+                    if (name === "big knife") {
+                        name = "sword";
+                    } else if (name === "bandage") {
+                        name = "bandaid";
+                    } else if (name === "first aid kit") {
+                        name = "medkit";
+                    }
+                    localStorage.setItem("graveItem", name);
+                }
+            } catch(err:unknown) {
+                // Well, don't worry about it.
+            }
         }
     }
 

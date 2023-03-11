@@ -19,14 +19,14 @@ const themes:Theme[] = [
         floor:'badConcrete',
         wallTint:0xA00000,
         floorTint:0x666666,
-        decorations:["box", "bookshelf","cabinet","lamp"]
+        decorations:["box", "bookshelf","cabinet","lamp","table"]
     },
     {
         wall:'testWall',
         floor:'badConcrete',
         wallTint:0x0000AA,
         floorTint:0x666644,
-        decorations:["bookshelf","cabinet","lamp"]
+        decorations:["bookshelf","cabinet","lamp","table"]
     },
     {
         wall:'testWall',
@@ -40,7 +40,7 @@ const themes:Theme[] = [
         floor:'badConcrete',
         wallTint:0x999900,
         floorTint:0x996633,
-        decorations:["box", "bookshelf","cabinet"]
+        decorations:["box", "bookshelf","cabinet","table"]
     },
 ]
 

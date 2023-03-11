@@ -25,6 +25,7 @@ export interface ItemParams {
     durability: number;
     durabilityRate: number;
     useAction?: UseAction;
+    value?:number;
 }
 
 /**
@@ -45,7 +46,8 @@ class Item {
     durability: number;
     durabilityRate: number;
     useAction: UseAction;
-    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate, useAction, alternateSprite}:ItemParams) {
+    value: number;
+    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate, useAction, alternateSprite, value=1}:ItemParams) {
         this.mapHandler = mapHandler;
         this.sprite = sprite;
         this.sprite.zIndex = -1;
@@ -60,6 +62,7 @@ class Item {
         this.useAction = useAction;
         this.findValidSpotAndPlaceSelf(x, y, z);
         this.alternateSprite = alternateSprite;
+        this.value = value;
     }
 
     placeSelf(x:number, y:number, z:number):boolean {
