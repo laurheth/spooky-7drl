@@ -40,6 +40,16 @@ const baseInteractables:InteractableDetails[] = [
         minLevel: 3
     },
     {
+        content: ["I found a locked door. Try as I might, I couldn't find the key for it.", "So I blasted it off its hinges with one of these.", "But beware, the creatures have ears, and they will come to find where the noise came from."],
+        minLevel: 2,
+        item: "bomb"
+    },
+    {
+        content: ["Why is there a chainsaw here? Is it to dispose of old furniture?", "Or maybe management knew what horrors could be unleashed from here?", "Either way, it is a blessed thing, loud as it might be."],
+        item: "chainsaw",
+        minLevel: 3
+    },
+    {
         content: ["Hiding here for a day, I can feel my joints become stiff.", "They seem to creak when I bend them.", "I've either been here a lot longer than I think,", "or I am becoming one of them."],
         minLevel: 3
     },
@@ -57,7 +67,7 @@ const baseInteractables:InteractableDetails[] = [
     },
     {
         content: ["I think the televisions are on the wrong channel."],
-        minLevel: 6
+        minLevel: 7
     },
     {
         content: ["I found the exit!", "If you find this, the exit is -"],

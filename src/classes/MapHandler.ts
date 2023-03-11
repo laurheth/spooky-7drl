@@ -10,6 +10,7 @@ import Pathfinder from "./Pathfinder"
 import { objectFactory, itemFactory } from "../util/entityTypes"
 import getInteractable from "../util/interactables"
 import Logger from "./Logger"
+import UI from "./UI"
 import themes from "../util/themes"
 import { randomElement } from "../util/randomness"
 
@@ -95,6 +96,7 @@ class MapHandler {
     // Generate a new map!
     generateNewMap({level, fresh}:NewMapParams) {
         // Totally fresh game. Which means: ditch the existing Player
+        console.log(fresh);
         if (fresh) {
             Game.getInstance().player = null;
         }
@@ -102,37 +104,42 @@ class MapHandler {
 
         let generatedMap:ReturnType<typeof mapGenerator>;
         if (level === 1) {
+            Logger.getInstance().sendMessage("This furniture store is cursed. Do what you must to survive, and escape this vile place!", {tone:"good", important:true});
             generatedMap = mapGenerator({
                 monsterCount: 5,
                 targetRoomCount: 5,
                 noBigGuy: true
             });
         } else if (level === 2) {
+            Logger.getInstance().sendMessage("You've reached the second floor. Your spine tingles; you know you are not alone. Something is hunting you...", {tone:"good", important:true});
             generatedMap = mapGenerator({
                 monsterCount: 7,
                 targetRoomCount: 6,
-                bonusGoodItems: ["bomb"]
             });
         } else if (level === 3) {
+            Logger.getInstance().sendMessage("You've reached the third floor. The cheerful looking walls of this place mock you, for you know what lies behind them.", {tone:"good", important:true});
             generatedMap = mapGenerator({
                 monsterCount: 8,
                 targetRoomCount: 8,
                 monsterOptions: ["chair", "chair", "chair", "lamp"],
-                bonusGoodItems: ["chainsaw", "bomb"]
+                bonusGoodItems: ["bomb"]
             });
         } else if (level === 4) {
+            Logger.getInstance().sendMessage("You've reached the fourth floor. Office furniture is here. You hear the distant sound of wheels turning.", {tone:"good", important:true});
             generatedMap = mapGenerator({
                 monsterCount: 11,
                 monsterOptions: ["chair", "chair", "rolly", "lamp", "lamp"],
                 bonusGoodItems: ["bomb","chainsaw"]
             });
         } else if (level === 5) {
+            Logger.getInstance().sendMessage("You've reached the fifth floor. The stench of brimstone and burnt meat fills the air.", {tone:"good", important:true});
             generatedMap = mapGenerator({
                 monsterCount: 13,
                 monsterOptions: ["chair","rolly","lamp","kallax"],
                 bonusGoodItems: ["bomb","chainsaw"]
             });
         } else if (level === 6) {
+            Logger.getInstance().sendMessage("You've reached the sixth floor. For a moment, you saw a skittering creature at the edge of your vision, only for it to be gone a moment later.", {tone:"good", important:true});
             generatedMap = mapGenerator({
                 monsterCount: 15,
                 targetRoomCount: 12,
@@ -140,6 +147,7 @@ class MapHandler {
                 bonusGoodItems: ["bomb","chainsaw"]
             });
         } else if (level === 7) {
+            Logger.getInstance().sendMessage("You've reached the seventh floor. The sound of static fills the air.", {tone:"good", important:true});
             generatedMap = mapGenerator({
                 monsterCount: 15,
                 targetRoomCount: 12,
@@ -147,6 +155,7 @@ class MapHandler {
                 bonusGoodItems: ["bomb","chainsaw"]
             });
         } else {
+            Logger.getInstance().sendMessage("You've reached the final floor. The air is just a little bit fresher here; you know you are almost free. But at what cost?", {tone:"good", important:true});
             generatedMap = mapGenerator({
                 monsterCount: 12,
                 targetRoomCount: 12,

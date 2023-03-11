@@ -1,6 +1,7 @@
 import Game from "./Game"
 import Item from "./Item"
 import Player from "./Player"
+import Tile from "./Tile"
 
 const fine = 0.66;
 const caution = 0.33
@@ -30,6 +31,8 @@ export default class UI {
     specialMessageButton: HTMLButtonElement;
     inventoryOpen:boolean = false;
     messageOpen:boolean = false;
+    actionButtonHolder: HTMLDivElement;
+    actionButtons:Map<string,HTMLButtonElement>;
 
     specialMessageButtonHandlers:(()=>void)[] = [];
 
@@ -49,6 +52,10 @@ export default class UI {
         this.specialMessageHeader = document.getElementById("specialMessageHeader") as HTMLHeadingElement;
         this.specialMessageContent = document.getElementById("specialMessageContent") as HTMLDivElement;
         this.specialMessageButton = document.getElementById("specialMessageButton") as HTMLButtonElement;
+
+        // Setup needed for action buttons
+        this.actionButtonHolder = document.getElementById("buttonHolder") as HTMLDivElement;
+        this.actionButtons = new Map<string, HTMLButtonElement>();
 
         this.specialMessageButton.addEventListener("click", () => {
             this.closeSpecialMessageModal();
@@ -219,6 +226,49 @@ export default class UI {
             })
         }
 
+    }
+
+    // Helper method for action buttons
+    buttonInputHandler(condition:any, name:string, key:string, buttonText:string) {
+        if (condition && !this.actionButtons.has(name)) {
+            // Make the button
+            const button = document.createElement("button");
+            button.textContent = buttonText;
+            button.addEventListener("click", () => {
+                // Simulate a keypress
+                Game.getInstance().handleInput(new KeyboardEvent("keydown", {key:key}), "keydown");
+                Game.getInstance().handleInput(new KeyboardEvent("keyup", {key:key}), "keyup");
+                this.updateTileActionList(Game.getInstance()?.player?.currentTile);
+            });
+            // Store it for the future
+            this.actionButtons.set(name, button);
+            // Add it to the page
+            this.actionButtonHolder.append(button);
+        } else if (!condition && this.actionButtons.has(name)) {
+            // Remove the button
+            this.actionButtonHolder.removeChild(this.actionButtons.get(name));
+            this.actionButtons.delete(name);
+        } else if (condition && this.actionButtons.has(name)) {
+            // Update button text
+            this.actionButtons.get(name).textContent = buttonText;
+        }
+    }
+
+    updateTileActionList(tile:Tile) {
+        if (tile) {
+            // There is an item here.
+            this.buttonInputHandler(tile.item, "item", "g", `Get ${tile?.item?.name}`);
+
+            // There is a readable thing here
+            this.buttonInputHandler(tile.interactive, "interactive", "r", `Read ${tile?.interactive?.name}`);
+            
+            // There is a level exit here
+            this.buttonInputHandler(tile.levelExit, "levelExit", ">", `Go down stairs`);
+        } else {
+            this.actionButtons.forEach((button, key) => {
+                this.actionButtons.delete(key);
+            })
+        }
     }
 
     static getInstance() {

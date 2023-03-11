@@ -35,6 +35,8 @@ class Game {
 
     active: boolean = false;
 
+    lastMouseEvent: MouseEvent;
+
     init() {
         // Initialize the Pixi application.
         this.pixiApp = new Application({
@@ -83,6 +85,18 @@ class Game {
         window.addEventListener("keydown", event => this.handleInput(event, "keydown"));
         window.addEventListener("keyup", event => this.handleInput(event, "keyup"));
 
+        // Attempt at touch / mouse only support
+        this.appRoot.addEventListener("mousedown", event => this.mouseInput(event, "keydown"));
+        window.addEventListener("mouseup", event => this.mouseInput(event, "keyup"));
+        this.appRoot.addEventListener("mousemove", event => {
+            if (this.lastMouseEvent) {
+                this.mouseInput(event, "keydown");
+            }
+        })
+        window.addEventListener("touchend", event => this.touchInput(event, "keyup"));
+        this.appRoot.addEventListener("touchstart", event => this.touchInput(event, "keydown"));
+        this.appRoot.addEventListener("touchmove", event => this.touchInput(event, "keydown"));
+
         // Setup the ticket
         this.ticker = new Ticker();
         this.ticker.add((time) => this.tick(time));
@@ -117,9 +131,66 @@ class Game {
         this.newMap(this.currentLevel + 1);
     }
 
+    getAppRootCenter() {
+        const rect = this.appRoot.getBoundingClientRect();
+        return [
+            (rect.left + rect.right) / 2,
+            (rect.top + rect.bottom) / 2,
+        ];
+    }
+
+    mouseInput(event:MouseEvent, eventType:"keydown"|"keyup") {
+        if (eventType === "keydown") {
+            this.lastMouseEvent = event;
+        } else {
+            this.lastMouseEvent = null;
+        }
+        const appRootCenter = this.getAppRootCenter();
+        const [relX, relY] = [event.clientX - appRootCenter[0], event.clientY - appRootCenter[1]];
+        if (Math.abs(relX) > Math.abs(relY)) {
+            if (relX > 0) {
+                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowRight"}), eventType);
+            } else {
+                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowLeft"}), eventType);
+            }
+        } else {
+            if (relY > 0) {
+                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowDown"}), eventType);
+            } else {
+                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowUp"}), eventType);
+            }
+        }
+    }
+
+    // Touch and mouse handler, converts to the equivalent keyboard input and passes it along
+    touchInput(event:TouchEvent, eventType:"keydown"|"keyup") {
+        if (event.touches.length > 0) {
+            const appRootCenter = this.getAppRootCenter();
+            const touch = event.touches[0];
+            const [relX, relY] = [touch.clientX - appRootCenter[0], touch.clientY - appRootCenter[1]];
+            if (Math.abs(relX) > Math.abs(relY)) {
+                if (relX > 0) {
+                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowRight"}), eventType);
+                } else {
+                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowLeft"}), eventType);
+                }
+            } else {
+                if (relY > 0) {
+                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowDown"}), eventType);
+                } else {
+                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowUp"}), eventType);
+                }
+            }
+        }
+        if (eventType === "keyup") {
+            // Always send a keyup, even if we don't have a key to go with it.
+            this.handleInput(new KeyboardEvent(eventType, {key:""}), eventType);
+        }
+    }
+
     // Input handler. Pass it to the player entity.
     handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup") {
-        if (eventType === "keydown" && event.key.toLowerCase() === "i") {
+        if (eventType === "keydown" && event.key && event.key.toLowerCase() === "i") {
             UI.getInstance().toggleInventory();
         } else if (eventType === "keydown" && (event.key === "Escape" || event.key === "Esc")) {
             UI.getInstance().closeInventory();

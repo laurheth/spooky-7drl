@@ -9,7 +9,16 @@ async function init() {
     await preloadAssets();
     const game = Game.getInstance();
     game.newMap(1,true);
-    UI.getInstance();
+    UI.getInstance().showSpecialMessageModal({
+        headingText: "Furniture: Screws and Blood",
+        body: [
+            "Dowel of wood, wheel of plastic, hex key of steel.",
+            "You came to this place, on a day like any other, to find some new furniture.",
+            "But the walls have closed in, all signs of human life is gone, and cursed wooden creatures now walk these halls.",
+            "You don't know what happened. But you do know you cannot stay here. Do what you must, and escape this vile place!"
+        ],
+        button: "Enter the horror..."
+    })
 }
 
 // Kick everything into motion.

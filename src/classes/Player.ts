@@ -101,7 +101,7 @@ class Player extends Entity {
                                 UI.getInstance().updateInventory(this);
                                 turnDone = true;
                             } else {
-                                Logger.getInstance().sendMessage("Your inventory is full! Use or drop something first.");
+                                Logger.getInstance().sendMessage("Your inventory is full! Use or drop something first.", {tone:"bad"});
                             }
                         } else {
                             Logger.getInstance().sendMessage("There is nothing here to pick up.");
@@ -209,14 +209,15 @@ class Player extends Entity {
         const success = super.moveTo(x, y, z, immediate, doActions);
         if (success && this.currentTile) {
             if (this.currentTile.item) {
-                Logger.getInstance().sendMessage(`You see at your feet at ${this.currentTile.item.name}.`);
+                Logger.getInstance().sendMessage(`You see at your feet a ${this.currentTile.item.name}.`);
             }
             if (this.currentTile.interactive) {
-                Logger.getInstance().sendMessage(`There is a ${this.currentTile.interactive.name} here. Read it? (Press "r")`);
+                Logger.getInstance().sendMessage(`There is a ${this.currentTile.interactive.name} here.`);
             }
             if (this.currentTile.levelExit) {
-                Logger.getInstance().sendMessage(`You found staircase, descending into darkness below... (Use ">" to descend)`, {tone:"good", important:true});
+                Logger.getInstance().sendMessage(`You found a staircase, descending into darkness below...`, {tone:"good", important:true});
             }
+            UI.getInstance().updateTileActionList(this.currentTile);
         }
         this.updateVisionDelay = this.actPeriod / 2;
         this.mapHandler.recenter(this);
@@ -260,6 +261,7 @@ class Player extends Entity {
             this.bleed();
         }
         if (this.hp <= 0) {
+            UI.getInstance().updateTileActionList(null);
             setTimeout(() => {
                 UI.getInstance().showSpecialMessageModal({
                     headingText: "You died!",
@@ -268,7 +270,7 @@ class Player extends Entity {
                         "Your soul will be forever bound to this place.",
                         "Would you like to try again?"
                     ],
-                    button: "Try again",
+                    button: "Click here to try again",
                     handler: () => {
                         Game.getInstance().newMap(1, true);
                     }

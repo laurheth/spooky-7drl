@@ -273,10 +273,9 @@ class Entity {
                         body: [
                             "After a hard fought battle, you walk out through the exit. You feel a gust of air against your face.",
                             "Is this freedom? Or is it only a matter of time before the horrors find you again?",
-                            "Either way, for now, you have escaped Spookea alive! Congratulations!",
-                            "Would you like to play again?"
+                            "Either way, for now, you have escaped alive! Congratulations!",
                         ],
-                        button: "Play again!",
+                        button: "Click here to play again",
                         handler: () => {
                             Game.getInstance().newMap(1, true);
                         }

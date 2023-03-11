@@ -67,6 +67,9 @@ class Tile {
             this.item.sprite.visible = this.visible;
             this.item.sprite.tint = contentTint;
         }
+        if (this.interactive && this.interactive.sprite) {
+            this.interactive.sprite.tint = contentTint;
+        }
     }
 
     unsee() {
