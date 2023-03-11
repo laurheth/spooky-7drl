@@ -73,6 +73,7 @@ async function preloadAssets() {
     for (const decoration of decorationList) {
         await Assets.load(`${assetPrefix}${decorationsPrefix}${decoration}${suffix}`);
     }
+    await Assets.load("mobileControlNubbin.png");
     await Assets.load("spriteSheet.json");
 }
 

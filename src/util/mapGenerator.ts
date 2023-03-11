@@ -410,44 +410,6 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
         })
     }
 
-    // Print for debugging
-    // TODO: Remove the below before release.
-    let xBounds = [0,0];
-    let yBounds = [0,0];
-    map.forEach((plan,key) => {
-        const [dx, dy] = key.split(',').map(x=>parseInt(x));
-        xBounds[0] = Math.min(xBounds[0], dx - 2);
-        xBounds[1] = Math.max(xBounds[1], dx + 2);
-        yBounds[0] = Math.min(yBounds[0], dy - 2);
-        yBounds[1] = Math.max(yBounds[1], dy + 2);
-    })
-    rooms.forEach(room => {
-        xBounds[0] = Math.min(xBounds[0], room.xBounds[0] + 2);
-        xBounds[1] = Math.max(xBounds[1], room.xBounds[1] + 2);
-        yBounds[0] = Math.min(yBounds[0], room.yBounds[0] + 2);
-        yBounds[1] = Math.max(yBounds[1], room.yBounds[1] + 2);
-    });
-    let minCorner = [xBounds[0], yBounds[0]];
-    const arrVersion:string[][] = Array(yBounds[1] - yBounds[0]).fill("").map(()=>Array(xBounds[1] - xBounds[0]).fill(" "));
-    map.forEach((plan, key) => {
-        const [dx, dy] = key.split(',').map(x=>parseInt(x));
-        const [x, y] = [dx - minCorner[0], dy - minCorner[1]];
-        arrVersion[y][x] = plan.type.length === 1 ? plan.type : '+';
-    });
-    const nums = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E'];
-    rooms.forEach((room,i) => {
-        const [x, y] = room.center;
-        arrVersion[y - minCorner[1]][x - minCorner[0]] = nums[i];
-    })
-
-    let toPrint = "";
-    arrVersion.forEach(row => {
-        let rowString = row.join("") + '\n';
-        toPrint += rowString;
-    })
-    console.log(toPrint);
-    // End of debugging message. TODO: delete the above before release.
-
     // Finally, add in some spots that might be good for interactables. Actually adding them is for somewhere else, though.
     const goodInteractableSpots:string[] = [];
     deadendsCopy.forEach(x => {

@@ -48,7 +48,7 @@ class Player extends Entity {
         UI.getInstance().updateStatus(this);
     }
 
-    handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup"|"buffer"|"repeat") {
+    handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup"|"buffer"|"repeat", noBuffer:boolean = false) {
         if (eventType === "keydown" || eventType === "buffer" || eventType === "repeat") {
             if (eventType !== "buffer") {
                 this.previousInput = event;
@@ -129,7 +129,9 @@ class Player extends Entity {
                     this.playerTurn = false;
                 }
             } else {
-                this.inputBuffer = event;
+                if (!noBuffer) {
+                    this.inputBuffer = event;
+                }
             }
         } else {
             this.previousInput = null;

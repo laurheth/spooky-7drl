@@ -37,6 +37,8 @@ class Game {
 
     lastMouseEvent: MouseEvent;
 
+    touchGuideSprite : Sprite;
+
     init() {
         // Initialize the Pixi application.
         this.pixiApp = new Application({
@@ -75,6 +77,12 @@ class Game {
             tileScale: 32
         });
 
+        // Mobile touch guide
+        this.touchGuideSprite = Sprite.from("mobileControlNubbin.png");
+        this.touchGuideSprite.alpha = 0.8;
+        this.touchGuideSprite.visible = false;
+        this.overlayContainer.addChild(this.touchGuideSprite);
+
         // Handle resizing.
         window.onresize = () => this.handleResize();
 
@@ -93,6 +101,7 @@ class Game {
                 this.mouseInput(event, "keydown");
             }
         })
+
         window.addEventListener("touchend", event => this.touchInput(event, "keyup"));
         this.appRoot.addEventListener("touchstart", event => this.touchInput(event, "keydown"));
         this.appRoot.addEventListener("touchmove", event => this.touchInput(event, "keydown"));
@@ -111,6 +120,8 @@ class Game {
         this.pixiApp.renderer.resize(this.appRoot.clientWidth, this.appRoot.clientHeight);
         this.overlayColor.width = this.appRoot.clientWidth;
         this.overlayColor.height = this.appRoot.clientHeight;
+        this.touchGuideSprite.x = this.appRoot.clientWidth - this.touchGuideSprite.width - 40;
+        this.touchGuideSprite.y = this.appRoot.clientHeight - this.touchGuideSprite.height - 40;
         this.mapHandler.recenter();
     }
 
@@ -139,6 +150,14 @@ class Game {
         ];
     }
 
+    getTouchGuideCenter() {
+        const rect = this.appRoot.getBoundingClientRect();
+        return [
+            rect.left + this.touchGuideSprite.x + this.touchGuideSprite.width / 2,
+            rect.top + this.touchGuideSprite.y + this.touchGuideSprite.height / 2,
+        ]
+    }
+
     mouseInput(event:MouseEvent, eventType:"keydown"|"keyup") {
         if (eventType === "keydown") {
             this.lastMouseEvent = event;
@@ -149,47 +168,48 @@ class Game {
         const [relX, relY] = [event.clientX - appRootCenter[0], event.clientY - appRootCenter[1]];
         if (Math.abs(relX) > Math.abs(relY)) {
             if (relX > 0) {
-                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowRight"}), eventType);
+                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowRight"}), eventType, true);
             } else {
-                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowLeft"}), eventType);
+                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowLeft"}), eventType, true);
             }
         } else {
             if (relY > 0) {
-                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowDown"}), eventType);
+                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowDown"}), eventType, true);
             } else {
-                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowUp"}), eventType);
+                this.handleInput(new KeyboardEvent(eventType, {key:"ArrowUp"}), eventType, true);
             }
         }
     }
 
     // Touch and mouse handler, converts to the equivalent keyboard input and passes it along
     touchInput(event:TouchEvent, eventType:"keydown"|"keyup") {
+        this.touchGuideSprite.visible = true;
         if (event.touches.length > 0) {
-            const appRootCenter = this.getAppRootCenter();
+            const appRootCenter = this.getTouchGuideCenter();
             const touch = event.touches[0];
             const [relX, relY] = [touch.clientX - appRootCenter[0], touch.clientY - appRootCenter[1]];
             if (Math.abs(relX) > Math.abs(relY)) {
                 if (relX > 0) {
-                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowRight"}), eventType);
+                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowRight"}), eventType, true);
                 } else {
-                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowLeft"}), eventType);
+                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowLeft"}), eventType, true);
                 }
             } else {
                 if (relY > 0) {
-                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowDown"}), eventType);
+                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowDown"}), eventType, true);
                 } else {
-                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowUp"}), eventType);
+                    this.handleInput(new KeyboardEvent(eventType, {key:"ArrowUp"}), eventType, true);
                 }
             }
         }
         if (eventType === "keyup") {
             // Always send a keyup, even if we don't have a key to go with it.
-            this.handleInput(new KeyboardEvent(eventType, {key:""}), eventType);
+            this.handleInput(new KeyboardEvent(eventType, {key:""}), eventType, true);
         }
     }
 
     // Input handler. Pass it to the player entity.
-    handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup") {
+    handleInput(event:KeyboardEvent, eventType:"keydown"|"keyup", noBuffer=false) {
         if (eventType === "keydown" && event.key && event.key.toLowerCase() === "i") {
             UI.getInstance().toggleInventory();
         } else if (eventType === "keydown" && (event.key === "Escape" || event.key === "Esc")) {
@@ -203,7 +223,7 @@ class Game {
             }
         } else {
             if (this.player) {
-                this.player.handleInput(event, eventType);
+                this.player.handleInput(event, eventType, noBuffer);
             }
         }
     }

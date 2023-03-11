@@ -96,7 +96,6 @@ class MapHandler {
     // Generate a new map!
     generateNewMap({level, fresh}:NewMapParams) {
         // Totally fresh game. Which means: ditch the existing Player
-        console.log(fresh);
         if (fresh) {
             Game.getInstance().player = null;
         }

@@ -168,6 +168,14 @@ button:hover, .inventory button:focus {
     overflow: hidden;
 }
 
+.mobileControl {
+    max-width: 20vmin;
+    max-height: 20vmin;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+
 canvas {
     display: block;
 }
@@ -310,7 +318,7 @@ canvas {
         font-size: 1.6rem;
     }
     button {
-        padding: 0 5px;
+        padding: 5px 5px;
     }
     .playerInfo > * {
         margin: 2px 0;
