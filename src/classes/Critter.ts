@@ -298,6 +298,16 @@ class Critter extends Entity {
         }
     }
 
+    walkStep(dx:number, dy:number, dxFirst:boolean) {
+        if (this.step(dxFirst ? Math.sign(dx) : 0, !dxFirst ? Math.sign(dy) : 0, 0)) {
+            return;
+        }
+        if (this.step(!dxFirst ? Math.sign(dx) : 0, dxFirst ? Math.sign(dy) : 0, 0)) {
+            return;
+        }
+        this.randomStep();
+    }
+
     walkToTarget(target:{x:number, y:number}, updateMainTarget:boolean = true) {
         if (updateMainTarget && target && target.x === this.x && target.y === this.y) {
             this.target = null;
@@ -310,17 +320,11 @@ class Critter extends Entity {
                 this.stepsUntilTaskSwitch = Math.abs(distX) + Math.abs(distY);
             }
             if (Math.abs(distX) > Math.abs(distY)) {
-                if(!this.step(Math.sign(distX), 0, 0)) {
-                    if(!this.step(0, Math.sign(distY), 0)) {
-                        this.randomStep();
-                    }
-                }
+                this.walkStep(distX, distY, true);
+            } else if (Math.abs(distX) < Math.abs(distY)) {
+                this.walkStep(distX, distY, false);
             } else {
-                if(!this.step(0, Math.sign(distY), 0)) {
-                    if (!this.step(Math.sign(distX), 0, 0)) {
-                        this.randomStep();
-                    }
-                }
+                this.walkStep(distX, distY, Math.random() > 0.5);
             }
         } else {
             // Lost them. Try our previous step, maybe that'll get us somewhere
