@@ -33,6 +33,7 @@ export default class UI {
     messageOpen:boolean = false;
     actionButtonHolder: HTMLDivElement;
     actionButtons:Map<string,HTMLButtonElement>;
+    keyBox: HTMLDivElement;
 
     specialMessageButtonHandlers:(()=>void)[] = [];
 
@@ -46,6 +47,7 @@ export default class UI {
         this.closeInventoryButton = document.getElementById("closeInventory") as HTMLButtonElement;
         this.inventoryList = document.getElementById("inventoryList") as HTMLUListElement;
         this.inventory = document.getElementById("inventory") as HTMLDivElement;
+        this.keyBox = document.getElementById("keyBox") as HTMLDivElement;
 
         // Elements needed for the special message modal
         this.specialMessageModal = document.getElementById("specialMessageModal") as HTMLDivElement;
@@ -189,6 +191,9 @@ export default class UI {
         while (this.inventoryList.lastChild) {
             this.inventoryList.removeChild(this.inventoryList.lastChild);
         }
+        while (this.keyBox.lastChild) {
+            this.keyBox.removeChild(this.keyBox.lastChild);
+        }
 
         if (inventory.length === 0) {
             const listItem = document.createElement("li");
@@ -198,7 +203,19 @@ export default class UI {
             inventory.forEach((item, index) => {
                 const listItem = document.createElement("li");
                 const nameElement = document.createElement("p");
-                nameElement.textContent = item.getStatusName();
+                const name = item.getStatusName();
+                nameElement.textContent = name;
+
+                if (item.useAction && item.useAction.type === "key") {
+                    // This is a key. Add to the keybox
+                    const img = document.createElement("img");
+                    img.alt = name;
+
+                    let nameParts = name.split(' ');
+
+                    img.src = `sprites/${nameParts[0]}${nameParts[1][0].toUpperCase()}${nameParts[1].slice(1)}.png`;
+                    this.keyBox.appendChild(img);
+                }
 
                 const useButton = document.createElement("button");
                 

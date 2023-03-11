@@ -163,6 +163,17 @@ button:hover, .inventory button:focus {
     color: #FF0000;
 }
 
+.keyBox {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.keyBox img {
+    user-select: none;
+    pointer-events: none;
+}
+
 .appRoot {
     flex-grow: 1;
     overflow: hidden;
