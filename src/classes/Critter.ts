@@ -90,11 +90,13 @@ class Critter extends Entity {
         if (this.awake > 0) {
             this.observe(this.awareness * this.awake);
             if (this.currentSprite && this.currentSprite !== this.awakeSprite) {
+                this.currentSprite = this.awakeSprite;
                 this.sprite.texture = Texture.from(this.awakeSprite);
             }
         } else {
             this.observe(this.awareness);
             if (this.currentSprite && this.currentSprite !== this.sleepSprite) {
+                this.currentSprite = this.sleepSprite;
                 this.sprite.texture = Texture.from(this.sleepSprite);
             }
         }

@@ -48,6 +48,10 @@ const baseInteractables:InteractableDetails[] = [
         minLevel: 4
     },
     {
+        content: ["The Lord will send on you curses, confusion and rebuke in everything you put your hand to.", "The Lord will plague you with poor quality furniture until he has destroyed you."],
+        minLevel: 4
+    },
+    {
         content: ["There is no escape."],
         minLevel: 5
     },
@@ -57,6 +61,10 @@ const baseInteractables:InteractableDetails[] = [
     },
     {
         content: ["I found the exit!", "If you find this, the exit is -"],
+        minLevel: 6
+    },
+    {
+        content: ["And I stood upon the sand of the sea, and saw a beast rise up out of the sea, having seven heads and ten horns, and upon his horns ten crowns, and upon his heads the name of blasphemy."],
         minLevel: 7
     },
 ];
@@ -78,6 +86,7 @@ export const resetFunction = () => {
             name: "grave",
             content: graveLines,
             item:graveGoody,
+            minLevel: Math.floor(Math.random() * 8),
             sprite: "sprites/grave.png",
         })
     }
