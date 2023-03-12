@@ -1,6 +1,8 @@
 # Furniture: Screws and Blood
 
-My contribution to the [2023 Seven Day Roguelike Challenge](https://itch.io/jam/7drl-challenge-2023). Built using **TypeScript** and **Pixi.js**.
+My contribution to the [2023 Seven Day Roguelike Challenge](https://itch.io/jam/7drl-challenge-2023). Built using [TypeScript](https://www.typescriptlang.org/) and [Pixi.js](https://pixijs.com/).
+
+Art was made using [GNU Image Manipulation Program](https://www.gimp.org/). Some sound effects were made in [JFXR](https://jfxr.frozenfractal.com/). Music was made using [BeepBox](https://www.beepbox.co/).
 
 A live version of the game is available to player [on itch.io](https://laurheth.itch.io/furniture)!
 
