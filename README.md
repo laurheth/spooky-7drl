@@ -4,7 +4,7 @@ My contribution to the [2023 Seven Day Roguelike Challenge](https://itch.io/jam/
 
 Art was made using [GNU Image Manipulation Program](https://www.gimp.org/). Some sound effects were made in [JFXR](https://jfxr.frozenfractal.com/). Music was made using [BeepBox](https://www.beepbox.co/).
 
-A live version of the game is available to player [on itch.io](https://laurheth.itch.io/furniture)!
+A live version of the game is available to play [on itch.io](https://laurheth.itch.io/furniture)!
 
 This project has been created using **webpack-cli**. For local testing and development, run
 
