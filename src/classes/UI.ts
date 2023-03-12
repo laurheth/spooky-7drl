@@ -125,12 +125,14 @@ export default class UI {
         this.inventoryOpen = true;
         this.updateTickerStatus();
         this.inventory.classList.remove("hide");
+        this.openInventoryButton.disabled = true;
     }
 
     closeInventory() {
         this.inventoryOpen = false;
         this.updateTickerStatus();
         this.inventory.classList.add("hide");
+        this.openInventoryButton.disabled = false;
     }
 
     updateTickerStatus() {

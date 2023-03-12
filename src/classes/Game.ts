@@ -97,6 +97,10 @@ class Game {
             SoundHandler.getInstance().setSound(!SoundHandler.getInstance().active);
             this.muteSprite.tint = SoundHandler.getInstance().active ? 0xFFFFFF : 0xFF0000;
         });
+        this.muteSprite.addEventListener("tap", (event) => {
+            SoundHandler.getInstance().setSound(!SoundHandler.getInstance().active);
+            this.muteSprite.tint = SoundHandler.getInstance().active ? 0xFFFFFF : 0xFF0000;
+        });
 
         // Handle resizing.
         window.onresize = () => this.handleResize();
