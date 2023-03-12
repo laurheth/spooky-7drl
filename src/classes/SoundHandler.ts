@@ -52,7 +52,7 @@ export default class SoundHandler {
         if (this.active && this.loadedSounds.has(name)) {
             const sound = this.loadedSounds.get(name);
             sound.play({
-                volume: sound.volume * volume,
+                volume: Math.min(1, Math.max(0, sound.volume * volume)),
                 speed:pitch
             });
         }

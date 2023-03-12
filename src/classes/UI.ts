@@ -285,6 +285,7 @@ export default class UI {
             this.buttonInputHandler(tile.levelExit, "levelExit", ">", `Go down stairs`);
         } else {
             this.actionButtons.forEach((button, key) => {
+                this.actionButtonHolder.removeChild(button);
                 this.actionButtons.delete(key);
             })
         }
