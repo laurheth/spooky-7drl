@@ -5,6 +5,7 @@ import Player from "./Player"
 import Entity from "./Entity"
 import Logger from "./Logger"
 import Game from "./Game"
+import SoundHandler from "./SoundHandler"
 
 interface UseAction {
     type: "heal"|"key"|"bomb";
@@ -197,6 +198,7 @@ class Item {
                             seen: "BOOM!!!",
                             unseen: "BOOM!!"
                         }, 100, true);
+                        SoundHandler.getInstance().playSound("explosion", 1, 1);
                         currentTile.removeDecoration();
                         damageAtTile(currentTile);
                         effectedSet.add(`${x},${y},${z}`);

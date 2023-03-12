@@ -4,6 +4,7 @@ import UI from "./UI"
 import Item from "./Item"
 import Logger from "./Logger"
 import { Sprite } from "pixi.js"
+import SoundHandler from "./SoundHandler"
 
 interface PlayerParams extends EntityParams {
     // Anything extra?
@@ -98,6 +99,7 @@ class Player extends Entity {
                                     this.equippedItem = tile.item;
                                 }
                                 tile.item.pickUp();
+                                UI.getInstance().updateInventory(this);
                                 UI.getInstance().updateInventory(this);
                                 turnDone = true;
                             } else {
@@ -261,6 +263,7 @@ class Player extends Entity {
         UI.getInstance().updateStatus(this);
         if (damage > 0) {
             this.bleed();
+            SoundHandler.getInstance().playSound("hit");
         }
         if (this.hp <= 0) {
             UI.getInstance().updateTileActionList(null);

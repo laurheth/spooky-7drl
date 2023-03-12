@@ -13,6 +13,7 @@ import Logger from "./Logger"
 import UI from "./UI"
 import themes from "../util/themes"
 import { randomElement } from "../util/randomness"
+import SoundHandler from "./SoundHandler"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -366,7 +367,7 @@ class MapHandler {
     }
 
     // Project some sound
-    sound(position:{x:number, y:number}, {seen, unseen}:{seen?:string, unseen?:string}, volume:number, playerOrigin:boolean) {
+    sound(position:{x:number, y:number}, {seen, unseen}:{seen?:string, unseen?:string}, volume:number, playerOrigin:boolean, soundToPlay?:string, pitch:number = 1) {
         // Give enemies a chance to hear it
         if (playerOrigin) {
             this.actors.forEach(actor => {
@@ -381,6 +382,9 @@ class MapHandler {
             const playerDistance = Math.max(Math.abs(player.x - position.x),Math.abs(player.y - position.y));
             if (playerDistance < Math.min(10, 3 * volume) && Math.random() < volume / playerDistance) {
                 const tile = this.getTile(position.x, position.y, 1);
+                if (soundToPlay) {
+                    SoundHandler.getInstance().playSound(soundToPlay, 1 / playerDistance, pitch);
+                }
                 if (tile && tile.visible) {
                     if (seen) {
                         Logger.getInstance().sendMessage(seen);

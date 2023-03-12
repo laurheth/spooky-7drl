@@ -6,6 +6,7 @@ import MapHandler from "./MapHandler"
 import { critterTypes, CritterAction, objectFactory, itemFactory } from "../util/entityTypes"
 import { randomElement } from "../util/randomness";
 import Logger from "./Logger"
+import SoundHandler from "./SoundHandler";
 
 interface CritterParams {
     critterType: keyof typeof critterTypes;
@@ -41,6 +42,9 @@ class Critter extends Entity {
     awakeSprite:string;
     sleepSprite:string;
     currentSprite:string;
+    pitch:number;
+    alertSound:string;
+    idleSound:string;
     constructor({critterType, x, y, z, ...rest}:CritterParams) {
         const critterDetails = critterTypes[critterType];
         super({
@@ -66,6 +70,9 @@ class Critter extends Entity {
         this.volume = critterDetails.volume ? critterDetails.volume : 1;
         this.unseenSounds = critterDetails.unseenSounds ? critterDetails.unseenSounds : [];
         this.seenSounds = critterDetails.seenSounds ? critterDetails.seenSounds : [];
+        this.alertSound = critterDetails.alertSoundFile ? critterDetails.alertSoundFile : "simpleRoar";
+        this.idleSound = critterDetails.soundFile ? critterDetails.soundFile : null;
+        this.pitch = critterDetails.pitch ? critterDetails.pitch : 1;
 
         if (critterDetails.corpseObject) {
             this.corpseObject = critterDetails.corpseObject;
@@ -125,7 +132,9 @@ class Critter extends Entity {
                     unseen: randomElement(this.unseenSounds)
                 },
                 this.volume,
-                false
+                false,
+                this.idleSound,
+                this.pitch
             );
             this.soundDelay = 5 + 10*Math.random();
         } else {
@@ -135,6 +144,12 @@ class Critter extends Entity {
             this.sprite.texture = Texture.from(this.awakeSprite);
         } else if (this.awake < 0 && this.currentSprite && this.currentSprite !== this.sleepSprite) {
             this.sprite.texture = Texture.from(this.sleepSprite);
+        }
+    }
+
+    playIdleSound(volume:number) {
+        if (this.idleSound && volume > 0) {
+            SoundHandler.getInstance().playSound(this.idleSound, volume, this.pitch ? this.pitch : 1);
         }
     }
 
@@ -186,6 +201,9 @@ class Critter extends Entity {
             this.stepsUntilTaskSwitch = -1;
             if (this.currentTile && this.currentTile.visible) {
                 Logger.getInstance().sendMessage("You hear a shout!", {important:true});
+                if (this.alertSound) {
+                    SoundHandler.getInstance().playSound(this.alertSound, Math.max(0.1,this.currentTile.light), this.pitch);
+                }
             }
         }
     }
@@ -215,6 +233,9 @@ class Critter extends Entity {
 
     damage(damage: number, attacker?: Entity): void {
         super.damage(damage, attacker);
+        if (damage > 0) {
+            SoundHandler.getInstance().playSound("hit");
+        }
         if (this.awake < 0) {
             this.observe(100);
         }

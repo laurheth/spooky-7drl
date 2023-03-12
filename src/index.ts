@@ -2,6 +2,7 @@ import "normalize.css"
 import "./styles/styles.css"
 import Game from "./classes/Game"
 import UI from "./classes/UI"
+import SoundHandler from "./classes/SoundHandler"
 import preloadAssets from "./util/preloadAssets"
 
 // Start up the game!
@@ -19,6 +20,7 @@ async function init() {
         ],
         button: "Enter the horror..."
     })
+    SoundHandler.getInstance();
 }
 
 // Kick everything into motion.

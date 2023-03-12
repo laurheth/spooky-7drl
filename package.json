@@ -22,6 +22,7 @@
     "serve": "webpack serve"
   },
   "dependencies": {
+    "@pixi/sound": "^5.1.1",
     "normalize.css": "^8.0.1",
     "pixi.js": "^7.1.4"
   }

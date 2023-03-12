@@ -3,6 +3,7 @@ import MapHandler from "./MapHandler"
 import Player from "./Player"
 import UI from "./UI"
 import { resetFunction } from "../util/interactables";
+import SoundHandler from "./SoundHandler";
 
 /**
  * This class encapsulates game setup, keeps track of the Pixi.js app, and some related functionality.
@@ -38,6 +39,8 @@ class Game {
     lastMouseEvent: MouseEvent;
 
     touchGuideSprite : Sprite;
+
+    muteSprite: Sprite;
 
     init() {
         // Initialize the Pixi application.
@@ -83,6 +86,18 @@ class Game {
         this.touchGuideSprite.visible = false;
         this.overlayContainer.addChild(this.touchGuideSprite);
 
+        // Mute button
+        this.muteSprite = Sprite.from("sprites/soundIcon.png");
+        this.muteSprite.interactive = true;
+        this.muteSprite.alpha = 0.8;
+        this.overlayContainer.addChild(this.muteSprite);
+        this.muteSprite.addEventListener("mouseover", () => this.muteSprite.alpha = 1);
+        this.muteSprite.addEventListener("mouseout", () => this.muteSprite.alpha = 0.8);
+        this.muteSprite.addEventListener("click", (event) => {
+            SoundHandler.getInstance().setSound(!SoundHandler.getInstance().active);
+            this.muteSprite.tint = SoundHandler.getInstance().active ? 0xFFFFFF : 0xFF0000;
+        });
+
         // Handle resizing.
         window.onresize = () => this.handleResize();
 
@@ -114,14 +129,25 @@ class Game {
 
     // Deal with resizing of the browser window
     handleResize() {
+        // Overall canvas size
         this.pixiApp.renderer.resolution = devicePixelRatio;
         this.pixiApp.view.width = this.appRoot.clientWidth;
         this.pixiApp.view.height = this.appRoot.clientHeight;
         this.pixiApp.renderer.resize(this.appRoot.clientWidth, this.appRoot.clientHeight);
+
+        // Overlap color
         this.overlayColor.width = this.appRoot.clientWidth;
         this.overlayColor.height = this.appRoot.clientHeight;
+
+        // Touch guide icon
         this.touchGuideSprite.x = this.appRoot.clientWidth - this.touchGuideSprite.width - 40;
         this.touchGuideSprite.y = this.appRoot.clientHeight - this.touchGuideSprite.height - 40;
+
+        // Mute button
+        this.muteSprite.x = 10;
+        this.muteSprite.y = this.appRoot.clientHeight - this.muteSprite.height - 10;
+
+        // Recenter map
         this.mapHandler.recenter();
     }
 
@@ -166,6 +192,9 @@ class Game {
         }
         const appRootCenter = this.getAppRootCenter();
         const [relX, relY] = [event.clientX - appRootCenter[0], event.clientY - appRootCenter[1]];
+        if (Math.abs(relX) > this.appRoot.clientWidth / 4) {
+            return;
+        }
         if (Math.abs(relX) > Math.abs(relY)) {
             if (relX > 0) {
                 this.handleInput(new KeyboardEvent(eventType, {key:"ArrowRight"}), eventType, true);

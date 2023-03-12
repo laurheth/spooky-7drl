@@ -5,6 +5,7 @@ import Logger from "./Logger"
 import Player from "./Player"
 import UI from "./UI"
 import Game from "./Game"
+import SoundHandler from "./SoundHandler"
 
 export type ActionTypes = "open" | "violence" | "push" | "swap" | "unlock" | "win";
 export type EntityFlags = "important" | "big" | "undying";
@@ -172,6 +173,7 @@ class Entity {
                         this.actionTypes.push("open");
                         this.pathBlocking = false;
                         Logger.getInstance().sendMessage(`You used the ${this.needsKey} to unlock the ${this.name}!`, {tone:"good"});
+                        SoundHandler.getInstance().playSound("unlock");
                         this.needsKey = "";
                     } else {
                         Logger.getInstance().sendMessage(`This door is locked! You need a ${this.needsKey}!`, {tone:"bad"});
@@ -197,7 +199,8 @@ class Entity {
                         {x:this.x, y:this.y},
                         {unseen:"You hear a door open..."},
                         2,
-                        actor instanceof Player
+                        actor instanceof Player,
+                        "openDoor"
                     );
                 }
                 this.sprite.visible = false;
@@ -247,6 +250,9 @@ class Entity {
                 } else {
                     dy = Math.sign(direction[1]);
                 }
+                if (this.currentTile && this.currentTile.visible) {
+                    this.playIdleSound(Math.max(0, this.currentTile.light));
+                }
                 // Take a steppy
                 if (this.step(dx, dy, 0, false)) {
                     // We did it!
@@ -293,6 +299,10 @@ class Entity {
     // Calculate damage amount
     damageAmount():number {
         return this.strength;
+    }
+
+    playIdleSound(volume:number) {
+        SoundHandler.getInstance().playSound("frictionOnWood", volume, 1);
     }
 
     // Act!

@@ -27,6 +27,9 @@ interface CritterDetails {
     unseenSounds?: string[];
     seenSounds?: string[];
     volume?: number;
+    soundFile?: string;
+    alertSoundFile?: string;
+    pitch?: number;
 }
 
 export const critterTypes:{[key:string]:CritterDetails} = {
@@ -48,6 +51,7 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: [] as string[],
         seenSounds: [] as string[],
         volume: 1,
+        pitch: 1.2,
     },
     exit: {
         name: "the Guardian of the Exit",
@@ -67,6 +71,7 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: ["A palpable sense of hopelessness fills the air."] as string[],
         seenSounds: ["The Guardian lets out a horrible scream.","The Guardian of the Exit salivates.", "The Guardian's breath make the air feel thick."] as string[],
         volume: 5,
+        pitch: 0.5,
     },
     tv: {
         name: "the wrong tv",
@@ -84,6 +89,8 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: ["You hear the sound of static.", "You hear a high pitched sound, on the edge of human hearing."] as string[],
         seenSounds: ["In the sound of static you can hear about how you never succeeded in your dreams.", "The static whispers to you about the futility of life.", "The static tells you to come closer.", "The static feels like it is emanating from within your own mind.", "All feelings of hope are washed away by the static."] as string[],
         volume: 3,
+        alertSoundFile: "static",
+        soundFile: "static",
     },
     kallax: {
         name: "the unsupported kallax",
@@ -101,6 +108,9 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: ["You hear the sound of wood scraping on the floor."] as string[],
         seenSounds: ["You you smell brimstone coming from the kallax!"] as string[],
         volume: 1,
+        pitch: 0.8,
+        soundFile: "frictionOnWood",
+        alertSoundFile: "frictionOnWood",
     },
     healer: {
         name: "the hexed key",
@@ -119,6 +129,7 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: [] as string[],
         seenSounds: [] as string[],
         volume: 1,
+        pitch: 1.3,
     },
     chair: {
         name: "the possessed chair",
@@ -136,6 +147,8 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: ["You hear the sound of wood scraping on the floor."] as string[],
         seenSounds: [] as string[],
         volume: 1,
+        soundFile: "frictionOnWood",
+        pitch: 1.1
     },
     rolly: {
         name: "the possessed computer chair",
@@ -153,6 +166,8 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: ["You hear the sound of wheels rolling on the ground."] as string[],
         seenSounds: [] as string[],
         volume: 1,
+        soundFile: "drawer",
+        alertSoundFile: "drawer",
     },
     bigBad: {
         name: "the Sofa of Eternity",
@@ -170,6 +185,8 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: ["You hear a horrible howling sound!", "A cold chill runs through your bones!", "The sounds of a thousand tiny footsteps echo through the halls!", "You hear the sound of creaking wood!"] as string[],
         seenSounds: ["The Sofa of Eternity howls!", "The Sofa Beast beckons you!", "The cushions rise and a horrible tongue slurps!", "The Sofa's thousand feet scamper furiously!"] as string[],
         volume: 4,
+        soundFile: "marchingFeets",
+        alertSoundFile: "marchingFeets",
     }
 };
 
