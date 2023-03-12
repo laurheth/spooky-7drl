@@ -51,7 +51,7 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         unseenSounds: [] as string[],
         seenSounds: [] as string[],
         volume: 1,
-        pitch: 1.2,
+        pitch: 1.4,
     },
     exit: {
         name: "the Guardian of the Exit",
@@ -72,6 +72,7 @@ export const critterTypes:{[key:string]:CritterDetails} = {
         seenSounds: ["The Guardian lets out a horrible scream.","The Guardian of the Exit salivates.", "The Guardian's breath make the air feel thick."] as string[],
         volume: 5,
         pitch: 0.5,
+        soundFile: "simpleRoar"
     },
     tv: {
         name: "the wrong tv",
@@ -344,7 +345,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 attackString: "slash",
                 durability: 5 + 10 * Math.random(),
                 durabilityRate: 0.5,
-                value: 2
+                value: 2,
+                useSound: "middleHurt"
             });
         case "hammer":
             return new Item({
@@ -357,7 +359,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 attackString: "smash",
                 durability: 5 + 10 * Math.random(),
                 durabilityRate: 0.4,
-                value: 2
+                value: 2,
+                useSound: "middleHurt"
             });
         case "hex key":
             return new Item({
@@ -384,6 +387,7 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                 durability: 10 + 2 * Math.random(),
                 durabilityRate: 0.01,
                 value: 10,
+                useSound: "bigHit"
             });
         case "bandaid":
             return new Item({
@@ -400,7 +404,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                     type: "heal",
                     value: 25
                 },
-                value: 0.2
+                value: 0.2,
+                useSound: "heal"
             });
         case "medkit":
             return new Item({
@@ -417,7 +422,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                     type: "heal",
                     value: 50
                 },
-                value: 1
+                value: 1,
+                useSound: "heal"
             });
         case "bomb":
             return new Item({
@@ -435,7 +441,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                     value: "50,8,3100"
                 },
                 alternateSprite: Sprite.from("sprites/bombLit.png"),
-                value: 10
+                value: 10,
+                useSound: "litFuse"
             });
         case "yellow key":
         case "blue key":
@@ -455,7 +462,8 @@ export function itemFactory(position:{x:number, y:number, z:number}, typeName:st
                     type: "key",
                     value: typeName
                 },
-                value: -1
+                value: -1,
+                useSound: "unlock"
             });
     }
 }

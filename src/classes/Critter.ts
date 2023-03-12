@@ -234,7 +234,11 @@ class Critter extends Entity {
     damage(damage: number, attacker?: Entity): void {
         super.damage(damage, attacker);
         if (damage > 0) {
-            SoundHandler.getInstance().playSound("hit");
+            if (attacker instanceof Player && attacker.equippedItem && attacker.equippedItem.useSound) {
+                SoundHandler.getInstance().playSound(attacker.equippedItem.useSound);
+            } else {
+                SoundHandler.getInstance().playSound("hit");
+            }
         }
         if (this.awake < 0) {
             this.observe(100);
@@ -300,7 +304,7 @@ class Critter extends Entity {
             const distance = Math.abs(this.target.x - this.x) + Math.abs(this.target.y - this.y);
             if (distance <= 1) {
                 // We're here! Do a heal.
-                if (Math.random() > 0.5) {
+                if (Math.random() > 0.8) {
                     deadFriend.active = true;
                     deadFriend.hp = Math.min(deadFriend.maxHp, Math.max(40, deadFriend.maxHp / 2));
                     deadFriend.sprite.zIndex = 0;

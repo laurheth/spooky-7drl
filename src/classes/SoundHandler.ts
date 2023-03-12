@@ -14,7 +14,11 @@ const sounds:{name:string, volume:number}[] = [
     {name: "simpleRoar", volume: 0.8},
     {name: "unlock", volume: 1},
     {name: "static", volume: 1},
-    {name: "beepboxSong", volume: 0.8}
+    {name: "bigHit", volume: 1},
+    {name: "litFuse", volume: 1},
+    {name: "beepboxSong", volume: 0.5},
+    {name: "heal", volume: 0.8},
+    {name: "middleHurt", volume: 1},
 ];
 
 const music = "beepboxSong";

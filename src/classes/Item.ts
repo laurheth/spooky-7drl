@@ -27,6 +27,7 @@ export interface ItemParams {
     durabilityRate: number;
     useAction?: UseAction;
     value?:number;
+    useSound?:string;
 }
 
 /**
@@ -48,7 +49,8 @@ class Item {
     durabilityRate: number;
     useAction: UseAction;
     value: number;
-    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate, useAction, alternateSprite, value=1}:ItemParams) {
+    useSound: string;
+    constructor({sprite, mapHandler, x, y, z, name, equippable, attackString, strength, durability, durabilityRate, useAction, alternateSprite, value=1, useSound}:ItemParams) {
         this.mapHandler = mapHandler;
         this.sprite = sprite;
         this.sprite.zIndex = -1;
@@ -64,6 +66,7 @@ class Item {
         this.findValidSpotAndPlaceSelf(x, y, z);
         this.alternateSprite = alternateSprite;
         this.value = value;
+        this.useSound = useSound;
     }
 
     placeSelf(x:number, y:number, z:number):boolean {
@@ -121,12 +124,19 @@ class Item {
         return false;
     }
 
+    playUseSound() {
+        if (this.useSound) {
+            SoundHandler.getInstance().playSound(this.useSound, 1, 1);
+        }
+    }
+
     // Use the item!
     use(player:Player):boolean {
         if (this.useAction.type === "heal" && typeof this.useAction.value === "number") {
             if (player.hp < player.maxHp) {
                 player.damage(-this.useAction.value);
                 Logger.getInstance().sendMessage("You feel healthier.");
+                this.playUseSound();
                 return true;
             } else {
                 Logger.getInstance().sendMessage("You are already fully healed!");
@@ -139,6 +149,7 @@ class Item {
                     const tile = this.mapHandler.getTile(player.x + i, player.y + j, player.z);
                     if (tile && tile.entity && tile.entity.needsKey === this.name) {
                         tile.entity.actUpon(player);
+                        this.playUseSound();
                         return true;
                     }
                 }
@@ -150,6 +161,7 @@ class Item {
             let [dmg, range, time] = this.useAction.value.split(",").map(x=>parseInt(x));
             const {x, y, z, currentTile} = player;
             const logger = Logger.getInstance();
+            this.playUseSound();
             logger.sendMessage("The bomb has been lit! Run!!", {tone:"bad", important:true});
             currentTile.addDecoration(this.alternateSprite, true);
             const warnings = ["1...", "2...", "3..."];
