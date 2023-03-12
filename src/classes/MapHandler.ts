@@ -371,7 +371,7 @@ class MapHandler {
         // Give enemies a chance to hear it
         if (playerOrigin) {
             this.actors.forEach(actor => {
-                if (actor instanceof Critter) {
+                if (actor instanceof Critter && actor.active) {
                     const distance = Math.max(Math.abs(position.x - actor.x), Math.abs(position.y - actor.y));
                     actor.observe(actor.awareness * 0.5, position, volume / distance);
                 }
