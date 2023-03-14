@@ -33,13 +33,13 @@ export const monsterStrengthScale = (difficulty:number):{strength:number, speed:
         return {
             strength: 0.75,
             speed: 0.8,
-            health: 0.75
+            health: 0.7
         }
     } else if (difficulty === 1) {
         return {
             strength: 0.9,
             speed: 0.9,
-            health: 0.9
+            health: 0.8
         }
     } else if (difficulty === 2) {
         return {
