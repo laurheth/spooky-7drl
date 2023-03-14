@@ -97,7 +97,6 @@ export default class UI {
                     let chosenDifficulty = 1
                     if (checkedRadio) {
                         chosenDifficulty = parseInt(checkedRadio.value);
-                        console.log(chosenDifficulty)
                     }
                     resolve(chosenDifficulty);
                 }
