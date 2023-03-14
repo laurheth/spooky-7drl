@@ -8,7 +8,9 @@ import preloadAssets from "./util/preloadAssets"
 // Start up the game!
 async function init() {
     await preloadAssets();
+    const difficulty = await UI.getInstance().showDifficultySelection();
     const game = Game.getInstance();
+    game.setDifficulty(difficulty);
     game.newMap(1,true);
     UI.getInstance().showSpecialMessageModal({
         headingText: "Furniture: Screws and Blood",

@@ -3,7 +3,7 @@ import Pathfinder from "../classes/Pathfinder"
 import { critterTypes } from "./entityTypes"
 import themes from "./themes"
 
-interface MapGenParams {
+export interface MapGenParams {
     minRoomSize?: number;
     maxRoomSize?: number;
     targetRoomCount?: number;
@@ -13,6 +13,7 @@ interface MapGenParams {
     noBigGuy?: boolean;
     includeWinCondition?: boolean;
     bonusGoodItems?: string[];
+    itemIterations?: number;
 }
 
 interface TilePlan {
@@ -51,7 +52,7 @@ const veryGoodItems = ["hammer", "medkit", "hammer", "medkit"];
 /**
  * Cool function to generate the map
  */
-export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomCount=10, multipleConnectionChance=0.5, monsterCount=10, monsterOptions=["chair"], noBigGuy=false, includeWinCondition=false, bonusGoodItems=[]}:MapGenParams = {}) {
+export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomCount=10, multipleConnectionChance=0.5, monsterCount=10, monsterOptions=["chair"], noBigGuy=false, includeWinCondition=false, bonusGoodItems=[], itemIterations=3}:MapGenParams = {}) {
     const map = new Map<string, TilePlan>();
     const rooms:RoomData[] = [];
     const roomConnectionTracker:number[][] = [];
@@ -292,7 +293,7 @@ export default function mapGenerator({minRoomSize=5, maxRoomSize=10, targetRoomC
 
     // Add some items
     const items:ItemData[] = [];
-    for (let i=0; i<3; i++) {
+    for (let i=0; i<itemIterations; i++) {
         items.push({
             name: randomElement(["sword","hammer","hex key"]),
             key: randomElement(entitySpots),

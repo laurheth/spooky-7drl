@@ -120,6 +120,10 @@ class Player extends Entity {
                     case "r":
                     case "E":
                     case "R":
+                        if (eventType === "repeat") {
+                            // Don't repeat reading
+                            break;
+                        }
                         if (this.currentTile && this.currentTile.interactive) {
                             this.currentTile.interactive.use();
                         } else {

@@ -42,6 +42,8 @@ class Game {
 
     muteSprite: Sprite;
 
+    difficulty: number;
+
     init() {
         // Initialize the Pixi application.
         this.pixiApp = new Application({
@@ -131,6 +133,10 @@ class Game {
         this.ticker.start();
     }
 
+    setDifficulty(difficulty:number) {
+        this.difficulty = difficulty;
+    }
+
     // Deal with resizing of the browser window
     handleResize() {
         // Overall canvas size
@@ -161,7 +167,7 @@ class Game {
             resetFunction();
         }
         this.currentLevel = level;
-        this.mapHandler.generateNewMap({level: level, fresh:fresh});
+        this.mapHandler.generateNewMap({level: level, fresh:fresh, difficulty: this.difficulty ? this.difficulty : 1});
         this.active = true;
         UI.getInstance().closeInventory();
         UI.getInstance().closeSpecialMessageModal();
@@ -255,6 +261,10 @@ class Game {
                 this.ticker.start();
             }
         } else {
+            if (UI.getInstance().messageOpen || UI.getInstance().inventoryOpen) {
+                // Ignore inputs when UI is open
+                return;
+            }
             if (this.player) {
                 this.player.handleInput(event, eventType, noBuffer);
             }

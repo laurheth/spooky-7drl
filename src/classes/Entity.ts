@@ -83,6 +83,7 @@ class Entity {
         }
         this.actPeriod = actPeriod;
         if (movePeriod) {
+            movePeriod = Math.min(movePeriod, actPeriod);
             this.spriteSpeed = 1 / (movePeriod);
         } else {
             this.spriteSpeed = 1 / (this.actPeriod);

@@ -4,9 +4,10 @@ import Player from "./Player"
 import Game from "./Game"
 import MapHandler from "./MapHandler"
 import { critterTypes, CritterAction, objectFactory, itemFactory } from "../util/entityTypes"
-import { randomElement } from "../util/randomness";
+import { randomElement } from "../util/randomness"
 import Logger from "./Logger"
-import SoundHandler from "./SoundHandler";
+import SoundHandler from "./SoundHandler"
+import { monsterStrengthScale } from "../util/difficultySettings"
 
 interface CritterParams {
     critterType: keyof typeof critterTypes;
@@ -47,11 +48,12 @@ class Critter extends Entity {
     idleSound:string;
     constructor({critterType, x, y, z, ...rest}:CritterParams) {
         const critterDetails = critterTypes[critterType];
+        const difficultyScale = monsterStrengthScale(Game.getInstance().difficulty);
         super({
             sprite: Sprite.from(critterDetails.spriteName),
-            hp: critterDetails.hp,
-            actPeriod: critterDetails.actPeriod,
-            movePeriod: critterDetails.movePeriod,
+            hp: critterDetails.hp * difficultyScale.health,
+            actPeriod: critterDetails.actPeriod / difficultyScale.speed,
+            movePeriod: critterDetails.movePeriod / difficultyScale.speed,
             acts: true,
             x: x,
             y: y,
@@ -66,7 +68,7 @@ class Critter extends Entity {
         this.persistence = critterDetails.persistence ? critterDetails.persistence : 10;
         this.actionTypes = critterDetails.actionTypes ? critterDetails.actionTypes : ["violence"];
         this.entityFlags = critterDetails.entityFlags ? critterDetails.entityFlags : [];
-        this.strength = critterDetails.strength ? critterDetails.strength : 1;
+        this.strength = (critterDetails.strength ? critterDetails.strength : 1) * difficultyScale.strength;
         this.volume = critterDetails.volume ? critterDetails.volume : 1;
         this.unseenSounds = critterDetails.unseenSounds ? critterDetails.unseenSounds : [];
         this.seenSounds = critterDetails.seenSounds ? critterDetails.seenSounds : [];

@@ -14,6 +14,7 @@ import UI from "./UI"
 import themes from "../util/themes"
 import { randomElement } from "../util/randomness"
 import SoundHandler from "./SoundHandler"
+import { itemNumber, monsterCountFactor, roomCountFactor } from "../util/difficultySettings"
 
 interface MapHandlerParams {
     tileContainer: Container;
@@ -24,6 +25,7 @@ interface MapHandlerParams {
 interface NewMapParams {
     level: number;
     fresh?: boolean;
+    difficulty: number;
 }
 
 /**
@@ -95,73 +97,90 @@ class MapHandler {
     }
 
     // Generate a new map!
-    generateNewMap({level, fresh}:NewMapParams) {
+    generateNewMap({level, fresh, difficulty}:NewMapParams) {
         // Totally fresh game. Which means: ditch the existing Player
         if (fresh) {
             Game.getInstance().player = null;
         }
         this.clearOldMap()
 
+        const monsterFactor = monsterCountFactor(difficulty);
+        const roomFactor = roomCountFactor(difficulty);
+        const itemIterations = itemNumber(difficulty);
+
         let generatedMap:ReturnType<typeof mapGenerator>;
         if (level === 1) {
             Logger.getInstance().sendMessage("This furniture store is cursed. Do what you must to survive, and escape this vile place!", {tone:"good", important:true});
             generatedMap = mapGenerator({
-                monsterCount: 5,
-                targetRoomCount: 5,
-                noBigGuy: true
+                monsterCount: 5 * monsterFactor,
+                targetRoomCount: 5 * roomFactor,
+                noBigGuy: true,
+                itemIterations: itemIterations
             });
         } else if (level === 2) {
             Logger.getInstance().sendMessage("You've reached the second floor. Your spine tingles; you know you are not alone. Something is hunting you...", {tone:"good", important:true});
             generatedMap = mapGenerator({
-                monsterCount: 7,
-                targetRoomCount: 6,
+                monsterCount: 7 * monsterFactor,
+                targetRoomCount: 6 * roomFactor,
+                bonusGoodItems: difficulty < 2 ? ["bomb"] : [],
+                noBigGuy: difficulty < 2,
+                itemIterations: itemIterations
             });
         } else if (level === 3) {
             Logger.getInstance().sendMessage("You've reached the third floor. The cheerful looking walls of this place mock you, for you know what lies behind them.", {tone:"good", important:true});
             generatedMap = mapGenerator({
-                monsterCount: 8,
-                targetRoomCount: 8,
+                monsterCount: 8 * monsterFactor,
+                targetRoomCount: 8 * roomFactor,
                 monsterOptions: ["chair", "chair", "chair", "lamp"],
-                bonusGoodItems: ["bomb"]
+                bonusGoodItems: ["bomb"],
+                noBigGuy: difficulty < 1,
+                itemIterations: itemIterations
             });
         } else if (level === 4) {
             Logger.getInstance().sendMessage("You've reached the fourth floor. Office furniture is here. You hear the distant sound of wheels turning.", {tone:"good", important:true});
             generatedMap = mapGenerator({
-                monsterCount: 11,
+                monsterCount: 11 * monsterFactor,
+                targetRoomCount: 10 * roomFactor,
                 monsterOptions: ["chair", "chair", "rolly", "lamp", "lamp"],
-                bonusGoodItems: ["bomb","chainsaw"]
+                bonusGoodItems: ["bomb","chainsaw"],
+                itemIterations: itemIterations
             });
         } else if (level === 5) {
             Logger.getInstance().sendMessage("You've reached the fifth floor. The stench of brimstone and burnt meat fills the air.", {tone:"good", important:true});
             generatedMap = mapGenerator({
-                monsterCount: 13,
+                monsterCount: 13 * monsterFactor,
+                targetRoomCount: 10 * roomFactor,
                 monsterOptions: ["chair","rolly","lamp","kallax"],
-                bonusGoodItems: ["bomb","chainsaw"]
+                bonusGoodItems: ["bomb","chainsaw"],
+                itemIterations: itemIterations
             });
         } else if (level === 6) {
             Logger.getInstance().sendMessage("You've reached the sixth floor. For a moment, you saw a skittering creature at the edge of your vision, only for it to be gone a moment later.", {tone:"good", important:true});
             generatedMap = mapGenerator({
-                monsterCount: 15,
-                targetRoomCount: 12,
+                monsterCount: 15 * monsterFactor,
+                targetRoomCount: 12 * roomFactor,
                 monsterOptions: ["chair", "chair", "lamp","rolly", "kallax","healer"],
-                bonusGoodItems: ["bomb","chainsaw"]
+                bonusGoodItems: ["bomb","chainsaw"],
+                itemIterations: itemIterations
             });
         } else if (level === 7) {
             Logger.getInstance().sendMessage("You've reached the seventh floor. The sound of static fills the air.", {tone:"good", important:true});
             generatedMap = mapGenerator({
-                monsterCount: 15,
-                targetRoomCount: 12,
+                monsterCount: 15 * monsterFactor,
+                targetRoomCount: 12 * roomFactor,
                 monsterOptions: ["chair", "chair", "lamp","rolly", "kallax","tv","healer"],
-                bonusGoodItems: ["bomb","chainsaw"]
+                bonusGoodItems: ["bomb","chainsaw"],
+                itemIterations: itemIterations
             });
         } else {
             Logger.getInstance().sendMessage("You've reached the final floor. The air is just a little bit fresher here; you know you are almost free. But at what cost?", {tone:"good", important:true});
             generatedMap = mapGenerator({
-                monsterCount: 12,
-                targetRoomCount: 12,
+                monsterCount: 12 * monsterFactor,
+                targetRoomCount: 12 * roomFactor,
                 bonusGoodItems: ["bomb","chainsaw","bomb"],
                 monsterOptions: ["chair", "kallax", "rolly", "lamp", "tv", "healer"],
                 includeWinCondition: true,
+                itemIterations: itemIterations
             });
         }
         
