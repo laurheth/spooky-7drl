@@ -29,6 +29,8 @@ export default class UI {
     specialMessageHeader: HTMLHeadingElement;
     specialMessageContent: HTMLDivElement;
     specialMessageButton: HTMLButtonElement;
+    specialMessageForm: HTMLFormElement;
+    specialMessageFieldset: HTMLFieldSetElement;
     inventoryOpen:boolean = false;
     messageOpen:boolean = false;
     actionButtonHolder: HTMLDivElement;
@@ -54,12 +56,20 @@ export default class UI {
         this.specialMessageHeader = document.getElementById("specialMessageHeader") as HTMLHeadingElement;
         this.specialMessageContent = document.getElementById("specialMessageContent") as HTMLDivElement;
         this.specialMessageButton = document.getElementById("specialMessageButton") as HTMLButtonElement;
+        this.specialMessageForm = document.getElementById("specialMessageForm") as HTMLFormElement;
+        this.specialMessageFieldset = document.getElementById("specialMessageFieldset") as HTMLFieldSetElement;
 
         // Setup needed for action buttons
         this.actionButtonHolder = document.getElementById("buttonHolder") as HTMLDivElement;
         this.actionButtons = new Map<string, HTMLButtonElement>();
 
-        this.specialMessageButton.addEventListener("click", () => {
+        this.specialMessageButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.closeSpecialMessageModal();
+        });
+
+        this.specialMessageForm.addEventListener("submit", (e) => {
+            e.preventDefault();
             this.closeSpecialMessageModal();
         });
 
@@ -72,6 +82,26 @@ export default class UI {
         this.closeInventoryButton.addEventListener("click", () => {
             this.closeInventory();
         });
+    }
+
+    showDifficultySelection() : Promise<number> {
+        return new Promise((resolve) => {
+            this.specialMessageFieldset.classList.remove("hide");
+            this.showSpecialMessageModal({
+                headingText: "Difficulty Select",
+                body: ["Welcome to Furniture: Screws and Blood! Please choose a difficulty level to begin."],
+                button: "Click to begin!",
+                handler: () => {
+                    this.specialMessageFieldset.classList.add("hide");
+                    const checkedRadio = document.querySelector(`input[type="radio"]:checked`) as HTMLInputElement;
+                    let chosenDifficulty = 1
+                    if (checkedRadio) {
+                        chosenDifficulty = parseInt(checkedRadio.value);
+                    }
+                    resolve(chosenDifficulty);
+                }
+            })
+        })
     }
 
     showSpecialMessageModal({headingText, body, button = "Close", handler}:SpecialMessageParams) {

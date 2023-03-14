@@ -85,6 +85,62 @@ li {
     margin: 10px 0;
 }
 
+.modal fieldset {
+    display: flex;
+    text-align: center;
+    border: none;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.modal fieldset.hide {
+    display: none;
+}
+
+.modal fieldset label {
+    border: 1.5px solid white;
+    padding: 5px;
+    margin: 10px;
+    border-radius: 5px;
+    position: relative;
+    transition: 0.3s border, 0.3s color;
+}
+
+fieldset input {
+    appearance: none;
+}
+
+fieldset input:focus-visible {
+    outline: none;
+}
+
+input:checked + label {
+    color: red;
+    border-color: red;
+}
+
+input:checked + label::before, input:checked + label::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: red;
+}
+
+input:checked + label::before {
+    content: ">";
+    left: calc(-5px - 1rem);
+}
+
+input:checked + label::after {
+    content: "<";
+    right: calc(-5px - 1rem);
+}
+
+input:focus-visible + label {
+    outline: 2px solid red;
+}
+
 .inventory {
     z-index: 10;
 }

@@ -22,12 +22,22 @@
                     </div>
                 </div>
                 <div id="specialMessageModal" class="specialMessageModal hide">
-                    <div class="modal">
+                    <form class="modal" id="specialMessageForm">
                         <h2 id="specialMessageHeader"></h2>
                         <div id="specialMessageContent">
                         </div>
-                        <button id="specialMessageButton"></button>
-                    </div>
+                        <fieldset id="specialMessageFieldset" class="hide">
+                            <input id="0" type="radio" name="difficulty" value="0">
+                            <label for="0">Accessible</label>
+                            <input id="1" type="radio" name="difficulty" value="1" checked>
+                            <label for="1">Suggested</label>
+                            <input id="2" type="radio" name="difficulty" value="2">
+                            <label for="2">Classic</label>
+                            <input id="3" type="radio" name="difficulty" value="3">
+                            <label for="3">Nightmare</label>
+                        </fieldset>
+                        <button id="specialMessageButton" type="submit"></button>
+                    </form>
                 </div>
                 <div id="inventory" class="inventory hide">
                     <div class="modal">
