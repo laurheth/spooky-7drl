@@ -429,7 +429,7 @@ class Critter extends Entity {
     pathToTarget(target:{x:number, y:number}) {
         // Check if we need to update the path
         if (this.path.length > 0) {
-            if (target.x !== this.path[0][0] && target.y !== this.path[0][1]) {
+            if (target.x !== this.path[0][0] || target.y !== this.path[0][1]) {
                 this.path = [];
             }
         }
@@ -450,7 +450,9 @@ class Critter extends Entity {
         // No path?? Oh no.
         if (this.path.length <= 0) {
             if (this.previousStep) {
-                this.step(this.previousStep[0], this.previousStep[1], 0);
+                if(!this.step(this.previousStep[0], this.previousStep[1], 0)) {
+                    this.randomStep();
+                }
             } else {
                 this.pause();
             }
